@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import Combine
 
 class RequestController: ObservableObject {
     @Published var requests: [Request] = []
@@ -149,19 +150,9 @@ class RequestController: ObservableObject {
         try await updateRequestStatus(for: id, to: .accepted)
     }
     
-    /// Reject a request
-    func rejectRequest(by id: UUID) async throws {
-        try await updateRequestStatus(for: id, to: .rejected)
-    }
-    
     /// Complete a request
     func completeRequest(by id: UUID) async throws {
         try await updateRequestStatus(for: id, to: .completed)
-    }
-    
-    /// Cancel a request
-    func cancelRequest(by id: UUID) async throws {
-        try await updateRequestStatus(for: id, to: .cancelled)
     }
     
     // MARK: - DELETE
@@ -193,7 +184,6 @@ class RequestController: ObservableObject {
             accepted: referrerRequests.filter { $0.status == .accepted }.count,
             rejected: referrerRequests.filter { $0.status == .rejected }.count,
             completed: referrerRequests.filter { $0.status == .completed }.count,
-            cancelled: referrerRequests.filter { $0.status == .cancelled }.count
         )
     }
     
@@ -228,6 +218,5 @@ struct RequestStats {
     let accepted: Int
     let rejected: Int
     let completed: Int
-    let cancelled: Int
 }
 

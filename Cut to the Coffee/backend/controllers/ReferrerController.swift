@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import Combine
 
 class ReferrerController: ObservableObject {
     @Published var referrers: [Referrer] = []
@@ -63,7 +64,7 @@ class ReferrerController: ObservableObject {
     }
     
     /// Fetch referrers by company
-    func fetchReferrers(by companyId: UUID) async throws -> [Referrer] {
+    func fetchReferrers(byCompany companyId: UUID) async throws -> [Referrer] {
         isLoading = true
         defer { isLoading = false }
         
@@ -76,7 +77,7 @@ class ReferrerController: ObservableObject {
     }
     
     /// Fetch referrers by role
-    func fetchReferrers(by roleId: UUID) async throws -> [Referrer] {
+    func fetchReferrers(byRole roleId: UUID) async throws -> [Referrer] {
         isLoading = true
         defer { isLoading = false }
         
@@ -87,20 +88,8 @@ class ReferrerController: ObservableObject {
         return referrers.filter { $0.roleID == roleId }
     }
     
-    /// Search referrers by name
-    func searchReferrers(by name: String) async throws -> [Referrer] {
-        isLoading = true
-        defer { isLoading = false }
-        
-        // TODO: Replace with actual API call
-        
-        try await Task.sleep(nanoseconds: 500_000_000)
-        
-        return referrers.filter { $0.name.localizedCaseInsensitiveContains(name) }
-    }
-    
     /// Fetch referrers by university
-    func fetchReferrers(by universityId: UUID) async throws -> [Referrer] {
+    func fetchReferrers(byUniversity universityId: UUID) async throws -> [Referrer] {
         isLoading = true
         defer { isLoading = false }
         
@@ -110,6 +99,18 @@ class ReferrerController: ObservableObject {
         try await Task.sleep(nanoseconds: 500_000_000)
         
         return referrers.filter { $0.universityID == universityId }
+    }
+    
+    /// Search referrers by name
+    func searchReferrers(byName name: String) async throws -> [Referrer] {
+        isLoading = true
+        defer { isLoading = false }
+        
+        // TODO: Replace with actual API call
+        
+        try await Task.sleep(nanoseconds: 500_000_000)
+        
+        return referrers.filter { $0.name.localizedCaseInsensitiveContains(name) }
     }
     
     // MARK: - UPDATE

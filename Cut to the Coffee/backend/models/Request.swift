@@ -21,12 +21,14 @@ enum RequestStatus: String, Codable, CaseIterable {
     case pending = "pending"
     case accepted = "accepted"
     case rejected = "rejected"
+    case completed = "completed"
     
     var displayName: String {
         switch self {
         case .pending: return "Pending"
         case .accepted: return "Accepted"
         case .rejected: return "Rejected"
+        case .completed: return "Completed"
         }
     }
 }

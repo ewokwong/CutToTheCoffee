@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import Combine
 
 class RoleController: ObservableObject {
     @Published var roles: [Role] = []

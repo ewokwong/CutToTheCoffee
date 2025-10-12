@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import Combine
 
 class StudentController: ObservableObject {
     @Published var students: [Student] = []
