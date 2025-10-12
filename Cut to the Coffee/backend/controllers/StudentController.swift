@@ -13,6 +13,8 @@ class StudentController: ObservableObject {
     @Published var isLoading: Bool = false
     @Published var errorMessage: String?
     
+    private let repository = StudentRepository()
+    
     // MARK: - CREATE
     
     /// Create a new student
@@ -20,17 +22,13 @@ class StudentController: ObservableObject {
         isLoading = true
         defer { isLoading = false }
         
-        // TODO: Replace with actual API call
-        // Example: let response = try await APIService.shared.post("/students", body: student)
-        
-        // Simulated API call
-        try await Task.sleep(nanoseconds: 500_000_000) // 0.5 second delay
+        let createdStudent = try await repository.create(student)
         
         await MainActor.run {
-            self.students.append(student)
+            self.students.append(createdStudent)
         }
         
-        return student
+        return createdStudent
     }
     
     // MARK: - READ
@@ -40,18 +38,13 @@ class StudentController: ObservableObject {
         isLoading = true
         defer { isLoading = false }
         
-        // TODO: Replace with actual API call
-        // Example: let students = try await APIService.shared.get("/students")
-        
-        // Simulated API call
-        try await Task.sleep(nanoseconds: 500_000_000)
+        let fetchedStudents = try await repository.fetchAll()
         
         await MainActor.run {
-            // Mock data for now
-            self.students = []
+            self.students = fetchedStudents
         }
         
-        return students
+        return fetchedStudents
     }
     
     /// Fetch a single student by ID
@@ -59,13 +52,7 @@ class StudentController: ObservableObject {
         isLoading = true
         defer { isLoading = false }
         
-        // TODO: Replace with actual API call
-        // Example: let student = try await APIService.shared.get("/students/\(id)")
-        
-        // Simulated API call
-        try await Task.sleep(nanoseconds: 500_000_000)
-        
-        return students.first { $0.id == id }
+        return try await repository.fetch(by: id)
     }
     
     /// Search students by university
@@ -73,12 +60,7 @@ class StudentController: ObservableObject {
         isLoading = true
         defer { isLoading = false }
         
-        // TODO: Replace with actual API call
-        // Example: let students = try await APIService.shared.get("/students/search?university_id=\(universityId)")
-        
-        try await Task.sleep(nanoseconds: 500_000_000)
-        
-        return students.filter { $0.universityID == universityId }
+        return try await repository.fetchByUniversity(universityId)
     }
     
     /// Search students by graduation year
@@ -86,11 +68,7 @@ class StudentController: ObservableObject {
         isLoading = true
         defer { isLoading = false }
         
-        // TODO: Replace with actual API call
-        
-        try await Task.sleep(nanoseconds: 500_000_000)
-        
-        return students.filter { $0.yearGraduating == year }
+        return try await repository.fetchByGraduationYear(year)
     }
     
     // MARK: - UPDATE
@@ -100,10 +78,7 @@ class StudentController: ObservableObject {
         isLoading = true
         defer { isLoading = false }
         
-        // TODO: Replace with actual API call
-        // Example: let updated = try await APIService.shared.put("/students/\(student.id)", body: student)
-        
-        try await Task.sleep(nanoseconds: 500_000_000)
+        try await repository.update(student)
         
         await MainActor.run {
             if let index = self.students.firstIndex(where: { $0.id == student.id }) {
@@ -141,10 +116,7 @@ class StudentController: ObservableObject {
         isLoading = true
         defer { isLoading = false }
         
-        // TODO: Replace with actual API call
-        // Example: try await APIService.shared.delete("/students/\(id)")
-        
-        try await Task.sleep(nanoseconds: 500_000_000)
+        try await repository.delete(by: id)
         
         await MainActor.run {
             self.students.removeAll { $0.id == id }

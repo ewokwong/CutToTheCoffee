@@ -6,6 +6,11 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		16BF3C8F2E9BC8B40097D9BA /* FirebaseCore in Frameworks */ = {isa = PBXBuildFile; productRef = 16BF3C8E2E9BC8B40097D9BA /* FirebaseCore */; };
+		16BF3C912E9BC8B40097D9BA /* FirebaseFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = 16BF3C902E9BC8B40097D9BA /* FirebaseFirestore */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXFileReference section */
 		16BF3C192E9B25800097D9BA /* Cut to the Coffee.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Cut to the Coffee.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -23,6 +28,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				16BF3C8F2E9BC8B40097D9BA /* FirebaseCore in Frameworks */,
+				16BF3C912E9BC8B40097D9BA /* FirebaseFirestore in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -65,6 +72,8 @@
 			);
 			name = "Cut to the Coffee";
 			packageProductDependencies = (
+				16BF3C8E2E9BC8B40097D9BA /* FirebaseCore */,
+				16BF3C902E9BC8B40097D9BA /* FirebaseFirestore */,
 			);
 			productName = "Cut to the Coffee";
 			productReference = 16BF3C192E9B25800097D9BA /* Cut to the Coffee.app */;
@@ -94,6 +103,9 @@
 			);
 			mainGroup = 16BF3C102E9B25800097D9BA;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				16BF3C6F2E9BC5D80097D9BA /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 16BF3C1A2E9B25800097D9BA /* Products */;
 			projectDirPath = "";
@@ -274,13 +286,14 @@
 				REGISTER_APP_GROUPS = YES;
 				SDKROOT = auto;
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
-				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx xros xrsimulator";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
 				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2,7";
+				TARGETED_DEVICE_FAMILY = "1,2";
 				XROS_DEPLOYMENT_TARGET = 26.0;
 			};
 			name = Debug;
@@ -318,13 +331,14 @@
 				REGISTER_APP_GROUPS = YES;
 				SDKROOT = auto;
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
-				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx xros xrsimulator";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
 				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2,7";
+				TARGETED_DEVICE_FAMILY = "1,2";
 				XROS_DEPLOYMENT_TARGET = 26.0;
 			};
 			name = Release;
@@ -351,6 +365,30 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		16BF3C6F2E9BC5D80097D9BA /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/firebase/firebase-ios-sdk";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 12.4.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		16BF3C8E2E9BC8B40097D9BA /* FirebaseCore */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 16BF3C6F2E9BC5D80097D9BA /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseCore;
+		};
+		16BF3C902E9BC8B40097D9BA /* FirebaseFirestore */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 16BF3C6F2E9BC5D80097D9BA /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseFirestore;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 16BF3C112E9B25800097D9BA /* Project object */;
 }

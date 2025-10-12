@@ -13,6 +13,8 @@ class RoleController: ObservableObject {
     @Published var isLoading: Bool = false
     @Published var errorMessage: String?
     
+    private let repository = RoleRepository()
+    
     // MARK: - CREATE
     
     /// Create a new role
@@ -20,16 +22,13 @@ class RoleController: ObservableObject {
         isLoading = true
         defer { isLoading = false }
         
-        // TODO: Replace with actual API call
-        // Example: let response = try await APIService.shared.post("/roles", body: role)
-        
-        try await Task.sleep(nanoseconds: 500_000_000)
+        let createdRole = try await repository.create(role)
         
         await MainActor.run {
-            self.roles.append(role)
+            self.roles.append(createdRole)
         }
         
-        return role
+        return createdRole
     }
     
     /// Create a new role with just a name
@@ -45,16 +44,13 @@ class RoleController: ObservableObject {
         isLoading = true
         defer { isLoading = false }
         
-        // TODO: Replace with actual API call
-        // Example: let roles = try await APIService.shared.get("/roles")
-        
-        try await Task.sleep(nanoseconds: 500_000_000)
+        let fetchedRoles = try await repository.fetchAll()
         
         await MainActor.run {
-            self.roles = []
+            self.roles = fetchedRoles
         }
         
-        return roles
+        return fetchedRoles
     }
     
     /// Fetch a single role by ID
@@ -62,11 +58,7 @@ class RoleController: ObservableObject {
         isLoading = true
         defer { isLoading = false }
         
-        // TODO: Replace with actual API call
-        
-        try await Task.sleep(nanoseconds: 500_000_000)
-        
-        return roles.first { $0.id == id }
+        return try await repository.fetch(by: id)
     }
     
     /// Search roles by name
@@ -74,12 +66,7 @@ class RoleController: ObservableObject {
         isLoading = true
         defer { isLoading = false }
         
-        // TODO: Replace with actual API call
-        // Example: let roles = try await APIService.shared.get("/roles/search?name=\(name)")
-        
-        try await Task.sleep(nanoseconds: 500_000_000)
-        
-        return roles.filter { $0.name.localizedCaseInsensitiveContains(name) }
+        return try await repository.searchByName(name)
     }
     
     // MARK: - UPDATE
@@ -89,10 +76,7 @@ class RoleController: ObservableObject {
         isLoading = true
         defer { isLoading = false }
         
-        // TODO: Replace with actual API call
-        // Example: let updated = try await APIService.shared.put("/roles/\(role.id)", body: role)
-        
-        try await Task.sleep(nanoseconds: 500_000_000)
+        try await repository.update(role)
         
         await MainActor.run {
             if let index = self.roles.firstIndex(where: { $0.id == role.id }) {
@@ -120,10 +104,7 @@ class RoleController: ObservableObject {
         isLoading = true
         defer { isLoading = false }
         
-        // TODO: Replace with actual API call
-        // Example: try await APIService.shared.delete("/roles/\(id)")
-        
-        try await Task.sleep(nanoseconds: 500_000_000)
+        try await repository.delete(by: id)
         
         await MainActor.run {
             self.roles.removeAll { $0.id == id }
@@ -149,4 +130,3 @@ class RoleController: ObservableObject {
         }
     }
 }
-

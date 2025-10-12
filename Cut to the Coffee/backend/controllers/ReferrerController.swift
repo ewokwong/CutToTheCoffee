@@ -13,6 +13,8 @@ class ReferrerController: ObservableObject {
     @Published var isLoading: Bool = false
     @Published var errorMessage: String?
     
+    private let repository = ReferrerRepository()
+    
     // MARK: - CREATE
     
     /// Create a new referrer
@@ -20,16 +22,13 @@ class ReferrerController: ObservableObject {
         isLoading = true
         defer { isLoading = false }
         
-        // TODO: Replace with actual API call
-        // Example: let response = try await APIService.shared.post("/referrers", body: referrer)
-        
-        try await Task.sleep(nanoseconds: 500_000_000)
+        let createdReferrer = try await repository.create(referrer)
         
         await MainActor.run {
-            self.referrers.append(referrer)
+            self.referrers.append(createdReferrer)
         }
         
-        return referrer
+        return createdReferrer
     }
     
     // MARK: - READ
@@ -39,16 +38,13 @@ class ReferrerController: ObservableObject {
         isLoading = true
         defer { isLoading = false }
         
-        // TODO: Replace with actual API call
-        // Example: let referrers = try await APIService.shared.get("/referrers")
-        
-        try await Task.sleep(nanoseconds: 500_000_000)
+        let fetchedReferrers = try await repository.fetchAll()
         
         await MainActor.run {
-            self.referrers = []
+            self.referrers = fetchedReferrers
         }
         
-        return referrers
+        return fetchedReferrers
     }
     
     /// Fetch a single referrer by ID
@@ -56,11 +52,7 @@ class ReferrerController: ObservableObject {
         isLoading = true
         defer { isLoading = false }
         
-        // TODO: Replace with actual API call
-        
-        try await Task.sleep(nanoseconds: 500_000_000)
-        
-        return referrers.first { $0.id == id }
+        return try await repository.fetch(by: id)
     }
     
     /// Fetch referrers by company
@@ -68,12 +60,7 @@ class ReferrerController: ObservableObject {
         isLoading = true
         defer { isLoading = false }
         
-        // TODO: Replace with actual API call
-        // Example: let referrers = try await APIService.shared.get("/referrers?company_id=\(companyId)")
-        
-        try await Task.sleep(nanoseconds: 500_000_000)
-        
-        return referrers.filter { $0.companyID == companyId }
+        return try await repository.fetchByCompany(companyId)
     }
     
     /// Fetch referrers by role
@@ -81,11 +68,7 @@ class ReferrerController: ObservableObject {
         isLoading = true
         defer { isLoading = false }
         
-        // TODO: Replace with actual API call
-        
-        try await Task.sleep(nanoseconds: 500_000_000)
-        
-        return referrers.filter { $0.roleID == roleId }
+        return try await repository.fetchByRole(roleId)
     }
     
     /// Fetch referrers by university
@@ -93,12 +76,7 @@ class ReferrerController: ObservableObject {
         isLoading = true
         defer { isLoading = false }
         
-        // TODO: Replace with actual API call
-        // Example: let referrers = try await APIService.shared.get("/referrers?university_id=\(universityId)")
-        
-        try await Task.sleep(nanoseconds: 500_000_000)
-        
-        return referrers.filter { $0.universityID == universityId }
+        return try await repository.fetchByUniversity(universityId)
     }
     
     /// Search referrers by name
@@ -106,11 +84,9 @@ class ReferrerController: ObservableObject {
         isLoading = true
         defer { isLoading = false }
         
-        // TODO: Replace with actual API call
-        
-        try await Task.sleep(nanoseconds: 500_000_000)
-        
-        return referrers.filter { $0.name.localizedCaseInsensitiveContains(name) }
+        // Fetch all referrers and filter locally (Firestore doesn't support case-insensitive search)
+        let allReferrers = try await repository.fetchAll()
+        return allReferrers.filter { $0.name.localizedCaseInsensitiveContains(name) }
     }
     
     // MARK: - UPDATE
@@ -120,10 +96,7 @@ class ReferrerController: ObservableObject {
         isLoading = true
         defer { isLoading = false }
         
-        // TODO: Replace with actual API call
-        // Example: let updated = try await APIService.shared.put("/referrers/\(referrer.id)", body: referrer)
-        
-        try await Task.sleep(nanoseconds: 500_000_000)
+        try await repository.update(referrer)
         
         await MainActor.run {
             if let index = self.referrers.firstIndex(where: { $0.id == referrer.id }) {
@@ -163,10 +136,7 @@ class ReferrerController: ObservableObject {
         isLoading = true
         defer { isLoading = false }
         
-        // TODO: Replace with actual API call
-        // Example: try await APIService.shared.delete("/referrers/\(id)")
-        
-        try await Task.sleep(nanoseconds: 500_000_000)
+        try await repository.delete(by: id)
         
         await MainActor.run {
             self.referrers.removeAll { $0.id == id }

@@ -13,6 +13,8 @@ class CompanyController: ObservableObject {
     @Published var isLoading: Bool = false
     @Published var errorMessage: String?
     
+    private let repository = CompanyRepository()
+    
     // MARK: - CREATE
     
     /// Create a new company
@@ -20,16 +22,13 @@ class CompanyController: ObservableObject {
         isLoading = true
         defer { isLoading = false }
         
-        // TODO: Replace with actual API call
-        // Example: let response = try await APIService.shared.post("/companies", body: company)
-        
-        try await Task.sleep(nanoseconds: 500_000_000)
+        let createdCompany = try await repository.create(company)
         
         await MainActor.run {
-            self.companies.append(company)
+            self.companies.append(createdCompany)
         }
         
-        return company
+        return createdCompany
     }
     
     /// Create a new company with just a name
@@ -45,16 +44,13 @@ class CompanyController: ObservableObject {
         isLoading = true
         defer { isLoading = false }
         
-        // TODO: Replace with actual API call
-        // Example: let companies = try await APIService.shared.get("/companies")
-        
-        try await Task.sleep(nanoseconds: 500_000_000)
+        let fetchedCompanies = try await repository.fetchAll()
         
         await MainActor.run {
-            self.companies = []
+            self.companies = fetchedCompanies
         }
         
-        return companies
+        return fetchedCompanies
     }
     
     /// Fetch a single company by ID
@@ -62,11 +58,7 @@ class CompanyController: ObservableObject {
         isLoading = true
         defer { isLoading = false }
         
-        // TODO: Replace with actual API call
-        
-        try await Task.sleep(nanoseconds: 500_000_000)
-        
-        return companies.first { $0.id == id }
+        return try await repository.fetch(by: id)
     }
     
     /// Search companies by name
@@ -74,12 +66,7 @@ class CompanyController: ObservableObject {
         isLoading = true
         defer { isLoading = false }
         
-        // TODO: Replace with actual API call
-        // Example: let companies = try await APIService.shared.get("/companies/search?name=\(name)")
-        
-        try await Task.sleep(nanoseconds: 500_000_000)
-        
-        return companies.filter { $0.name.localizedCaseInsensitiveContains(name) }
+        return try await repository.searchByName(name)
     }
     
     // MARK: - UPDATE
@@ -89,10 +76,7 @@ class CompanyController: ObservableObject {
         isLoading = true
         defer { isLoading = false }
         
-        // TODO: Replace with actual API call
-        // Example: let updated = try await APIService.shared.put("/companies/\(company.id)", body: company)
-        
-        try await Task.sleep(nanoseconds: 500_000_000)
+        try await repository.update(company)
         
         await MainActor.run {
             if let index = self.companies.firstIndex(where: { $0.id == company.id }) {
@@ -120,10 +104,7 @@ class CompanyController: ObservableObject {
         isLoading = true
         defer { isLoading = false }
         
-        // TODO: Replace with actual API call
-        // Example: try await APIService.shared.delete("/companies/\(id)")
-        
-        try await Task.sleep(nanoseconds: 500_000_000)
+        try await repository.delete(by: id)
         
         await MainActor.run {
             self.companies.removeAll { $0.id == id }
@@ -149,4 +130,3 @@ class CompanyController: ObservableObject {
         }
     }
 }
-

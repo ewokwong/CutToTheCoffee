@@ -13,6 +13,8 @@ class RequestController: ObservableObject {
     @Published var isLoading: Bool = false
     @Published var errorMessage: String?
     
+    private let repository = RequestRepository()
+    
     // MARK: - CREATE
     
     /// Create a new request
@@ -20,16 +22,13 @@ class RequestController: ObservableObject {
         isLoading = true
         defer { isLoading = false }
         
-        // TODO: Replace with actual API call
-        // Example: let response = try await APIService.shared.post("/requests", body: request)
-        
-        try await Task.sleep(nanoseconds: 500_000_000)
+        let createdRequest = try await repository.create(request)
         
         await MainActor.run {
-            self.requests.append(request)
+            self.requests.append(createdRequest)
         }
         
-        return request
+        return createdRequest
     }
     
     /// Create a new request between student and referrer
@@ -45,16 +44,13 @@ class RequestController: ObservableObject {
         isLoading = true
         defer { isLoading = false }
         
-        // TODO: Replace with actual API call
-        // Example: let requests = try await APIService.shared.get("/requests")
-        
-        try await Task.sleep(nanoseconds: 500_000_000)
+        let fetchedRequests = try await repository.fetchAll()
         
         await MainActor.run {
-            self.requests = []
+            self.requests = fetchedRequests
         }
         
-        return requests
+        return fetchedRequests
     }
     
     /// Fetch a single request by ID
@@ -62,11 +58,7 @@ class RequestController: ObservableObject {
         isLoading = true
         defer { isLoading = false }
         
-        // TODO: Replace with actual API call
-        
-        try await Task.sleep(nanoseconds: 500_000_000)
-        
-        return requests.first { $0.id == id }
+        return try await repository.fetch(by: id)
     }
     
     /// Fetch all requests for a student
@@ -74,12 +66,7 @@ class RequestController: ObservableObject {
         isLoading = true
         defer { isLoading = false }
         
-        // TODO: Replace with actual API call
-        // Example: let requests = try await APIService.shared.get("/requests?student_id=\(studentId)")
-        
-        try await Task.sleep(nanoseconds: 500_000_000)
-        
-        return requests.filter { $0.studentID == studentId }
+        return try await repository.fetchByStudent(studentId)
     }
     
     /// Fetch all requests for a referrer
@@ -87,12 +74,7 @@ class RequestController: ObservableObject {
         isLoading = true
         defer { isLoading = false }
         
-        // TODO: Replace with actual API call
-        // Example: let requests = try await APIService.shared.get("/requests?referrer_id=\(referrerId)")
-        
-        try await Task.sleep(nanoseconds: 500_000_000)
-        
-        return requests.filter { $0.referrerID == referrerId }
+        return try await repository.fetchByReferrer(referrerId)
     }
     
     /// Fetch requests by status
@@ -100,18 +82,15 @@ class RequestController: ObservableObject {
         isLoading = true
         defer { isLoading = false }
         
-        // TODO: Replace with actual API call
-        // Example: let requests = try await APIService.shared.get("/requests?status=\(status.rawValue)")
-        
-        try await Task.sleep(nanoseconds: 500_000_000)
-        
-        return requests.filter { $0.status == status }
+        return try await repository.fetchByStatus(status)
     }
     
     /// Fetch pending requests for a referrer
     func fetchPendingRequests(forReferrer referrerId: UUID) async throws -> [Request] {
-        let referrerRequests = try await fetchRequests(forReferrer: referrerId)
-        return referrerRequests.filter { $0.status == .pending }
+        isLoading = true
+        defer { isLoading = false }
+        
+        return try await repository.fetchPendingByReferrer(referrerId)
     }
     
     // MARK: - UPDATE
@@ -121,10 +100,7 @@ class RequestController: ObservableObject {
         isLoading = true
         defer { isLoading = false }
         
-        // TODO: Replace with actual API call
-        // Example: let updated = try await APIService.shared.put("/requests/\(request.id)", body: request)
-        
-        try await Task.sleep(nanoseconds: 500_000_000)
+        try await repository.update(request)
         
         await MainActor.run {
             if let index = self.requests.firstIndex(where: { $0.id == request.id }) {
@@ -137,12 +113,17 @@ class RequestController: ObservableObject {
     
     /// Update request status
     func updateRequestStatus(for requestId: UUID, to status: RequestStatus) async throws {
-        guard var request = requests.first(where: { $0.id == requestId }) else {
-            throw RequestControllerError.requestNotFound
-        }
+        isLoading = true
+        defer { isLoading = false }
         
-        request.updateStatus(to: status)
-        try await updateRequest(request)
+        try await repository.updateStatus(for: requestId, to: status)
+        
+        // Update local cache
+        await MainActor.run {
+            if let index = self.requests.firstIndex(where: { $0.id == requestId }) {
+                self.requests[index].updateStatus(to: status)
+            }
+        }
     }
     
     /// Accept a request
@@ -162,10 +143,7 @@ class RequestController: ObservableObject {
         isLoading = true
         defer { isLoading = false }
         
-        // TODO: Replace with actual API call
-        // Example: try await APIService.shared.delete("/requests/\(id)")
-        
-        try await Task.sleep(nanoseconds: 500_000_000)
+        try await repository.delete(by: id)
         
         await MainActor.run {
             self.requests.removeAll { $0.id == id }

@@ -13,6 +13,8 @@ class UniversityController: ObservableObject {
     @Published var isLoading: Bool = false
     @Published var errorMessage: String?
     
+    private let repository = UniversityRepository()
+    
     // MARK: - CREATE
     
     /// Create a new university
@@ -20,16 +22,13 @@ class UniversityController: ObservableObject {
         isLoading = true
         defer { isLoading = false }
         
-        // TODO: Replace with actual API call
-        // Example: let response = try await APIService.shared.post("/universities", body: university)
-        
-        try await Task.sleep(nanoseconds: 500_000_000)
+        let createdUniversity = try await repository.create(university)
         
         await MainActor.run {
-            self.universities.append(university)
+            self.universities.append(createdUniversity)
         }
         
-        return university
+        return createdUniversity
     }
     
     /// Create a new university with just a name
@@ -45,16 +44,13 @@ class UniversityController: ObservableObject {
         isLoading = true
         defer { isLoading = false }
         
-        // TODO: Replace with actual API call
-        // Example: let universities = try await APIService.shared.get("/universities")
-        
-        try await Task.sleep(nanoseconds: 500_000_000)
+        let fetchedUniversities = try await repository.fetchAll()
         
         await MainActor.run {
-            self.universities = []
+            self.universities = fetchedUniversities
         }
         
-        return universities
+        return fetchedUniversities
     }
     
     /// Fetch a single university by ID
@@ -62,11 +58,7 @@ class UniversityController: ObservableObject {
         isLoading = true
         defer { isLoading = false }
         
-        // TODO: Replace with actual API call
-        
-        try await Task.sleep(nanoseconds: 500_000_000)
-        
-        return universities.first { $0.id == id }
+        return try await repository.fetch(by: id)
     }
     
     /// Search universities by name
@@ -74,12 +66,7 @@ class UniversityController: ObservableObject {
         isLoading = true
         defer { isLoading = false }
         
-        // TODO: Replace with actual API call
-        // Example: let universities = try await APIService.shared.get("/universities/search?name=\(name)")
-        
-        try await Task.sleep(nanoseconds: 500_000_000)
-        
-        return universities.filter { $0.name.localizedCaseInsensitiveContains(name) }
+        return try await repository.searchByName(name)
     }
     
     // MARK: - UPDATE
@@ -89,10 +76,7 @@ class UniversityController: ObservableObject {
         isLoading = true
         defer { isLoading = false }
         
-        // TODO: Replace with actual API call
-        // Example: let updated = try await APIService.shared.put("/universities/\(university.id)", body: university)
-        
-        try await Task.sleep(nanoseconds: 500_000_000)
+        try await repository.update(university)
         
         await MainActor.run {
             if let index = self.universities.firstIndex(where: { $0.id == university.id }) {
@@ -120,10 +104,7 @@ class UniversityController: ObservableObject {
         isLoading = true
         defer { isLoading = false }
         
-        // TODO: Replace with actual API call
-        // Example: try await APIService.shared.delete("/universities/\(id)")
-        
-        try await Task.sleep(nanoseconds: 500_000_000)
+        try await repository.delete(by: id)
         
         await MainActor.run {
             self.universities.removeAll { $0.id == id }
@@ -149,4 +130,3 @@ class UniversityController: ObservableObject {
         }
     }
 }
-
