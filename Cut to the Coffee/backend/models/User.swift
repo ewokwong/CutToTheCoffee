@@ -13,6 +13,7 @@ protocol User: Identifiable, Codable {
     var name: String { get set }
     var email: String { get set }
     var linkedinURL: String { get set }
+    var universityID: UUID { get set }
     var bio: String? { get set }
     var profilePictureURL: String? { get set }
 }

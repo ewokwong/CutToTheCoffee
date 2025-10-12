@@ -13,6 +13,7 @@ struct Referrer: User {
     var name: String
     var email: String
     var linkedinURL: String
+    var universityID: UUID
     var bio: String?
     var profilePictureURL: String?
     
@@ -29,6 +30,7 @@ extension Referrer {
         name: String,
         email: String,
         linkedinURL: String,
+        universityID: UUID,
         companyID: UUID,
         roleID: UUID,
         bio: String? = nil,
@@ -39,6 +41,7 @@ extension Referrer {
         self.name = name
         self.email = email
         self.linkedinURL = linkedinURL
+        self.universityID = universityID
         self.bio = bio
         self.profilePictureURL = profilePictureURL
         self.companyID = companyID

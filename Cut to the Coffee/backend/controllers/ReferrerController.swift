@@ -99,6 +99,19 @@ class ReferrerController: ObservableObject {
         return referrers.filter { $0.name.localizedCaseInsensitiveContains(name) }
     }
     
+    /// Fetch referrers by university
+    func fetchReferrers(by universityId: UUID) async throws -> [Referrer] {
+        isLoading = true
+        defer { isLoading = false }
+        
+        // TODO: Replace with actual API call
+        // Example: let referrers = try await APIService.shared.get("/referrers?university_id=\(universityId)")
+        
+        try await Task.sleep(nanoseconds: 500_000_000)
+        
+        return referrers.filter { $0.universityID == universityId }
+    }
+    
     // MARK: - UPDATE
     
     /// Update an existing referrer

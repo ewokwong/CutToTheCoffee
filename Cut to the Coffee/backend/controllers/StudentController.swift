@@ -68,16 +68,16 @@ class StudentController: ObservableObject {
     }
     
     /// Search students by university
-    func searchStudents(by university: String) async throws -> [Student] {
+    func searchStudents(by universityId: UUID) async throws -> [Student] {
         isLoading = true
         defer { isLoading = false }
         
         // TODO: Replace with actual API call
-        // Example: let students = try await APIService.shared.get("/students/search?university=\(university)")
+        // Example: let students = try await APIService.shared.get("/students/search?university_id=\(universityId)")
         
         try await Task.sleep(nanoseconds: 500_000_000)
         
-        return students.filter { $0.university.localizedCaseInsensitiveContains(university) }
+        return students.filter { $0.universityID == universityId }
     }
     
     /// Search students by graduation year

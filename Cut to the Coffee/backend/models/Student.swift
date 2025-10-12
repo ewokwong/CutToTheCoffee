@@ -13,13 +13,13 @@ struct Student: User {
     var name: String
     var email: String
     var linkedinURL: String
+    var universityID: UUID
     var bio: String?
     var profilePictureURL: String?
     
     // Student-specific fields
     var resumeURL: String
     var degree: String
-    var university: String
     var yearGraduating: Int
 }
 
@@ -30,9 +30,9 @@ extension Student {
         name: String,
         email: String,
         linkedinURL: String,
+        universityID: UUID,
         resumeURL: String,
         degree: String,
-        university: String,
         yearGraduating: Int,
         bio: String? = nil,
         profilePictureURL: String? = nil
@@ -41,11 +41,11 @@ extension Student {
         self.name = name
         self.email = email
         self.linkedinURL = linkedinURL
+        self.universityID = universityID
         self.bio = bio
         self.profilePictureURL = profilePictureURL
         self.resumeURL = resumeURL
         self.degree = degree
-        self.university = university
         self.yearGraduating = yearGraduating
     }
 }
