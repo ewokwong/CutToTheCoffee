@@ -12,12 +12,79 @@ struct WelcomeView: View {
     
     @State private var isAnimating = false
     @State private var opacity: Double = 0
+    @State private var showReferrerCodeEntry = false
+    @State private var showReferrerHome = false
     
     var body: some View {
+        ZStack {
+            if showReferrerHome {
+                // Show referrer home page
+                ReferrerHomeView()
+                    .transition(.asymmetric(
+                        insertion: .move(edge: .trailing),
+                        removal: .move(edge: .trailing)
+                    ))
+            } else if showReferrerCodeEntry {
+                // Show code entry screen
+                ReferrerCodeEntryView(
+                    onCodeEntered: {
+                        withAnimation(.easeInOut(duration: 0.3)) {
+                            showReferrerCodeEntry = false
+                            showReferrerHome = true
+                        }
+                    },
+                    onBack: {
+                        withAnimation(.easeInOut(duration: 0.3)) {
+                            showReferrerCodeEntry = false
+                        }
+                    }
+                )
+                .transition(.asymmetric(
+                    insertion: .move(edge: .trailing),
+                    removal: .move(edge: .trailing)
+                ))
+            } else {
+                // Welcome screen content
+                welcomeScreenContent
+            }
+        }
+        .onAppear {
+            isAnimating = true
+            withAnimation(.easeIn(duration: 0.5)) {
+                opacity = 1.0
+            }
+        }
+    }
+    
+    private var welcomeScreenContent: some View {
         ZStack {
             // Background gradient using theme
             AppTheme.primaryGradient
                 .ignoresSafeArea()
+            
+            // Top right referrer button
+            VStack {
+                HStack {
+                    Spacer()
+                    Button {
+                        withAnimation(.easeInOut(duration: 0.3)) {
+                            showReferrerCodeEntry = true
+                        }
+                    } label: {
+                        Text("I'm a referrer")
+                            .font(.system(size: 14, weight: .semibold))
+                            .foregroundColor(AppTheme.coffeeBrown)
+                            .padding(.horizontal, 16)
+                            .padding(.vertical, 10)
+                            .background(AppTheme.creamWhite)
+                            .cornerRadius(20)
+                    }
+                    .padding(.top, 16)
+                    .padding(.trailing, 20)
+                }
+                Spacer()
+            }
+            .opacity(opacity)
             
             VStack(spacing: 30) {
                 Spacer()
@@ -132,12 +199,6 @@ struct WelcomeView: View {
                 }
                 .opacity(opacity)
                 .padding(.bottom, 50)
-            }
-        }
-        .onAppear {
-            isAnimating = true
-            withAnimation(.easeIn(duration: 0.5)) {
-                opacity = 1.0
             }
         }
     }
