@@ -6,7 +6,6 @@
 //
 
 import SwiftUI
-import AuthenticationServices
 
 struct WelcomeView: View {
     @ObservedObject var authManager = AuthenticationManager.shared
@@ -63,7 +62,7 @@ struct WelcomeView: View {
                     .opacity(opacity)
                 
                 // Tagline
-                Text("Connect with professionals over coffee")
+                Text("Skip the niceties, connect with professionals who can refer you to your dream company")
                     .font(.system(size: 16, weight: .medium))
                     .foregroundColor(AppTheme.textOnDark.opacity(0.9))
                     .multilineTextAlignment(.center)
@@ -74,25 +73,45 @@ struct WelcomeView: View {
                 
                 // Sign-in buttons
                 VStack(spacing: 16) {
-                    // Sign in with Apple button
-                    SignInWithAppleButton(
-                        onRequest: { request in
-                            request.requestedScopes = [.fullName, .email]
-                        },
-                        onCompletion: { result in
-                            switch result {
-                            case .success(let authorization):
-                                // Handle successful authorization
-                                authManager.signInWithApple(authorization: authorization)
-                            case .failure(let error):
-                                // Handle error
-                                print("❌ Authorization failed: \(error.localizedDescription)")
-                            }
+                    // Sign in with Apple button (hardcoded for now)
+                    Button {
+                        // TODO: Replace with actual Sign in with Apple integration
+                        // For now, hardcode authentication with placeholder data
+                        let placeholderUserId = "placeholder_user_\(UUID().uuidString.prefix(8))"
+                        let placeholderName = "Test User"
+                        let placeholderEmail = "testuser@example.com"
+                        
+                        // Save auth state with placeholder data
+                        UserDefaults.standard.set(true, forKey: "isAuthenticated")
+                        UserDefaults.standard.set(placeholderUserId, forKey: "userId")
+                        UserDefaults.standard.set(placeholderName, forKey: "userFullName")
+                        UserDefaults.standard.set(placeholderEmail, forKey: "userEmail")
+                        
+                        // Update auth manager
+                        DispatchQueue.main.async {
+                            authManager.isAuthenticated = true
+                            authManager.currentUserId = placeholderUserId
+                            authManager.userFullName = placeholderName
+                            authManager.userEmail = placeholderEmail
                         }
-                    )
-                    .signInWithAppleButtonStyle(.white)
-                    .frame(height: 50)
-                    .cornerRadius(12)
+                        
+                        print("✅ Signed in with placeholder data")
+                        print("   User ID: \(placeholderUserId)")
+                        print("   Name: \(placeholderName)")
+                        print("   Email: \(placeholderEmail)")
+                    } label: {
+                        HStack {
+                            Image(systemName: "applelogo")
+                                .font(.system(size: 18, weight: .semibold))
+                            Text("Sign in with Apple")
+                                .font(.system(size: 16, weight: .semibold))
+                        }
+                        .foregroundColor(.black)
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 50)
+                        .background(Color.white)
+                        .cornerRadius(12)
+                    }
                     .padding(.horizontal, 40)
                     
                     // Spacer and description for explore network
