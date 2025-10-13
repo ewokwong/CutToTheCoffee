@@ -21,14 +21,14 @@ enum RequestStatus: String, Codable, CaseIterable {
     case pending = "pending"
     case accepted = "accepted"
     case rejected = "rejected"
-    case completed = "completed"
+    case read = "read"
     
     var displayName: String {
         switch self {
         case .pending: return "Pending"
         case .accepted: return "Accepted"
         case .rejected: return "Rejected"
-        case .completed: return "Completed"
+        case .read: return "Read"
         }
     }
 }
@@ -42,7 +42,7 @@ extension RequestStatus {
         switch self {
         case .pending: return Color.orange
         case .accepted: return Color.blue
-        case .completed: return Color.green
+        case .read: return Color.gray
         case .rejected: return Color.red
         }
     }
@@ -52,7 +52,7 @@ extension RequestStatus {
         switch self {
         case .pending: return "clock.fill"
         case .accepted: return "checkmark.circle.fill"
-        case .completed: return "star.fill"
+        case .read: return "face.frowning.fill"
         case .rejected: return "xmark.circle.fill"
         }
     }

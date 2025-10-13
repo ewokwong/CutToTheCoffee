@@ -130,12 +130,7 @@ class RequestController: ObservableObject {
     func acceptRequest(by id: UUID) async throws {
         try await updateRequestStatus(for: id, to: .accepted)
     }
-    
-    /// Complete a request
-    func completeRequest(by id: UUID) async throws {
-        try await updateRequestStatus(for: id, to: .completed)
-    }
-    
+        
     // MARK: - DELETE
     
     /// Delete a request by ID
@@ -160,8 +155,7 @@ class RequestController: ObservableObject {
             total: referrerRequests.count,
             pending: referrerRequests.filter { $0.status == .pending }.count,
             accepted: referrerRequests.filter { $0.status == .accepted }.count,
-            rejected: referrerRequests.filter { $0.status == .rejected }.count,
-            completed: referrerRequests.filter { $0.status == .completed }.count,
+            rejected: referrerRequests.filter { $0.status == .rejected }.count
         )
     }
     
@@ -195,6 +189,5 @@ struct RequestStats {
     let pending: Int
     let accepted: Int
     let rejected: Int
-    let completed: Int
 }
 

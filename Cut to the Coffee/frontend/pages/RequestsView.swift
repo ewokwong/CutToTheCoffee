@@ -9,12 +9,45 @@ import SwiftUI
 
 struct RequestsView: View {
     @State private var selectedFilter: RequestFilter = .all
+    @State private var selectedReferrer: (name: String, company: String, role: String, university: String)? = nil
     
     enum RequestFilter: String, CaseIterable {
         case all = "All"
         case pending = "Pending"
+        case read = "Read"
         case accepted = "Accepted"
-        case completed = "Completed"
+    }
+    
+    // Sample data for demonstration
+    let sampleRequests: [(referrerName: String, company: String, role: String, status: RequestStatus, date: String)] = [
+        ("John Smith", "Google", "Software Engineer", .pending, "2 days ago"),
+        ("Sarah Johnson", "Microsoft", "Product Manager", .accepted, "3 days ago"),
+        ("Mike Chen", "Amazon", "Data Scientist", .read, "5 days ago"),
+        ("Emily Davis", "Meta", "Software Engineer", .pending, "1 week ago"),
+        ("David Lee", "Apple", "UX Designer", .accepted, "1 week ago"),
+        ("Jessica Brown", "Netflix", "Software Engineer", .read, "2 weeks ago"),
+        ("Chris Wilson", "Tesla", "Consultant", .pending, "2 weeks ago"),
+        ("Amanda Garcia", "Uber", "Product Manager", .accepted, "3 weeks ago"),
+    ]
+    
+    var filteredRequests: [(referrerName: String, company: String, role: String, status: RequestStatus, date: String)] {
+        if selectedFilter == .all {
+            return sampleRequests
+        } else {
+            return sampleRequests.filter { selectedFilter.rawValue == $0.status.displayName }
+        }
+    }
+    
+    var pendingCount: Int {
+        sampleRequests.filter { $0.status == .pending }.count
+    }
+    
+    var readCount: Int {
+        sampleRequests.filter { $0.status == .read }.count
+    }
+    
+    var acceptedCount: Int {
+        sampleRequests.filter { $0.status == .accepted }.count
     }
     
     var body: some View {
@@ -24,27 +57,27 @@ struct RequestsView: View {
                 AppTheme.lightGradient
                     .ignoresSafeArea(edges: .all)
                 
-                VStack(spacing: 0) {
-                    // Header
-                    VStack(spacing: 16) {
-                        HStack {
-                            Text("Your Requests")
-                                .font(.system(size: 32, weight: .bold, design: .rounded))
-                                .coffeePrimaryText()
-                            
-                            Spacer()
-                            
-                            // New Request Button
-                            Button {
-                                // Action to create new request
-                            } label: {
-                                Image(systemName: "plus.circle.fill")
-                                    .font(.system(size: 28))
-                                    .foregroundColor(AppTheme.coffeeBrown)
+                if let referrer = selectedReferrer {
+                    // Referrer Profile View
+                    ReferrerProfileView(
+                        referrerName: referrer.name,
+                        company: referrer.company,
+                        role: referrer.role,
+                        university: referrer.university,
+                        onBack: {
+                            withAnimation(.easeInOut(duration: 0.3)) {
+                                selectedReferrer = nil
                             }
                         }
-                        .padding(.horizontal, 20)
-                        .padding(.top, 16)
+                    )
+                    .transition(.asymmetric(
+                        insertion: .move(edge: .trailing),
+                        removal: .move(edge: .trailing)
+                    ))
+                } else {
+                    VStack(spacing: 0) {
+                    // Header
+                    VStack(spacing: 16) {
                         
                         // Filter Chips
                         ScrollView(.horizontal, showsIndicators: false) {
@@ -71,35 +104,51 @@ struct RequestsView: View {
                             // Stats Cards
                             HStack(spacing: 12) {
                                 StatCard(
-                                    icon: "clock.fill",
-                                    value: "5",
+                                    value: "\(pendingCount)",
                                     label: "Pending"
                                 )
                                 
                                 StatCard(
-                                    icon: "checkmark.circle.fill",
-                                    value: "12",
-                                    label: "Accepted"
+                                    value: "\(readCount)",
+                                    label: "Read"
                                 )
                                 
                                 StatCard(
-                                    icon: "star.fill",
-                                    value: "8",
-                                    label: "Completed"
+                                    value: "\(acceptedCount)",
+                                    label: "Accepted"
                                 )
                             }
                             .padding(.horizontal, 20)
                             
                             // Requests List
                             VStack(spacing: 12) {
-                                ForEach(0..<8) { index in
-                                    RequestItemCard(
-                                        referrerName: "Referrer Name \(index + 1)",
-                                        company: "Tech Company",
-                                        role: "Software Engineer",
-                                        status: getStatusForIndex(index),
-                                        date: "2 days ago"
-                                    )
+                                if filteredRequests.isEmpty {
+                                    VStack(spacing: 12) {
+                                        Image(systemName: "tray")
+                                            .font(.system(size: 48))
+                                            .foregroundColor(AppTheme.textSecondary)
+                                            .padding(.top, 40)
+                                        
+                                        Text("No \(selectedFilter.rawValue.lowercased()) requests")
+                                            .font(.system(size: 18, weight: .semibold))
+                                            .foregroundColor(AppTheme.textSecondary)
+                                    }
+                                    .padding(.top, 20)
+                                } else {
+                                    ForEach(Array(filteredRequests.enumerated()), id: \.offset) { index, request in
+                                        RequestItemCard(
+                                            referrerName: request.referrerName,
+                                            company: request.company,
+                                            role: request.role,
+                                            status: request.status,
+                                            date: request.date
+                                        )
+                                        .onTapGesture {
+                                            withAnimation(.easeInOut(duration: 0.3)) {
+                                                selectedReferrer = (request.referrerName, request.company, request.role, "University")
+                                            }
+                                        }
+                                    }
                                 }
                             }
                             .padding(.horizontal, 20)
@@ -108,16 +157,9 @@ struct RequestsView: View {
                         .padding(.bottom, 100) // Space for bottom nav bar
                     }
                 }
+                }
             }
             .navigationBarHidden(true)
-        }
-    }
-    
-    private func getStatusForIndex(_ index: Int) -> RequestStatus {
-        switch index % 3 {
-        case 0: return .pending
-        case 1: return .accepted
-        default: return .completed
         }
     }
 }
@@ -125,26 +167,21 @@ struct RequestsView: View {
 // MARK: - Stat Card
 
 struct StatCard: View {
-    let icon: String
     let value: String
     let label: String
     
     var body: some View {
         VStack(spacing: 8) {
-            Image(systemName: icon)
-                .font(.system(size: 24))
-                .foregroundColor(AppTheme.coffeeBrown)
-            
             Text(value)
-                .font(.system(size: 24, weight: .bold))
+                .font(.system(size: 28, weight: .bold))
                 .coffeePrimaryText()
             
             Text(label)
-                .font(.system(size: 12, weight: .medium))
+                .font(.system(size: 14, weight: .medium))
                 .foregroundColor(AppTheme.textSecondary)
         }
         .frame(maxWidth: .infinity)
-        .padding(.vertical, 16)
+        .padding(.vertical, 20)
         .background(AppTheme.creamWhite)
         .cornerRadius(16)
         .shadow(color: AppTheme.shadow, radius: 4, x: 0, y: 2)
