@@ -46,8 +46,8 @@ struct Cut_to_the_CoffeeApp: App {
                             .transition(.opacity)
                             .zIndex(2)
                     } else {
-                        // User has completed onboarding - show home page
-                        HomeView()
+                        // User has completed onboarding - show main app with tabs
+                        MainTabView()
                             .transition(.opacity)
                             .zIndex(3)
                     }

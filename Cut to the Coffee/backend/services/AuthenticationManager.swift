@@ -31,7 +31,7 @@ class AuthenticationManager: ObservableObject {
     @Published var userEmail: String?
     
     /// Whether the user needs to complete onboarding
-    @Published var needsOnboarding: Bool = false
+    @Published var needsOnboarding: Bool = false // Set to false to skip onboarding during development
     
     // MARK: - Singleton
     
@@ -63,7 +63,8 @@ class AuthenticationManager: ObservableObject {
         
         // Check if onboarding has been completed
         let onboardingCompleted = UserDefaults.standard.bool(forKey: onboardingCompletedKey)
-        needsOnboarding = isAuthenticated && !onboardingCompleted
+        // TEMP: Skip onboarding for development
+        needsOnboarding = false // Change back to: isAuthenticated && !onboardingCompleted
         
         // Complete the auth check with a minimum loading time for smooth UX
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
@@ -128,7 +129,8 @@ class AuthenticationManager: ObservableObject {
             
             // Check if onboarding is needed (new user won't have completed it yet)
             let onboardingCompleted = UserDefaults.standard.bool(forKey: self.onboardingCompletedKey)
-            self.needsOnboarding = !onboardingCompleted
+            // TEMP: Skip onboarding for development
+            self.needsOnboarding = false // Change back to: !onboardingCompleted
         }
     }
     

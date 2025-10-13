@@ -61,14 +61,6 @@ struct WelcomeView: View {
                     .foregroundColor(AppTheme.creamWhite)
                     .opacity(opacity)
                 
-                // Tagline
-                Text("Skip the niceties, connect with professionals who can refer you to your dream company")
-                    .font(.system(size: 16, weight: .medium))
-                    .foregroundColor(AppTheme.textOnDark.opacity(0.9))
-                    .multilineTextAlignment(.center)
-                    .opacity(opacity)
-                    .padding(.horizontal, 40)
-                
                 Spacer()
                 
                 // Sign-in buttons

@@ -33,6 +33,36 @@ enum RequestStatus: String, Codable, CaseIterable {
     }
 }
 
+// MARK: - UI Extensions for RequestStatus
+import SwiftUI
+
+extension RequestStatus {
+    /// Color for status badge in UI
+    var color: Color {
+        switch self {
+        case .pending: return Color.orange
+        case .accepted: return Color.blue
+        case .completed: return Color.green
+        case .rejected: return Color.red
+        }
+    }
+    
+    /// Icon for status badge in UI
+    var icon: String {
+        switch self {
+        case .pending: return "clock.fill"
+        case .accepted: return "checkmark.circle.fill"
+        case .completed: return "star.fill"
+        case .rejected: return "xmark.circle.fill"
+        }
+    }
+    
+    /// Text label for status badge in UI
+    var text: String {
+        return displayName
+    }
+}
+
 // MARK: - Convenience Initializers
 extension Request {
     /// Initialize a new request with pending status
