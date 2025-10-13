@@ -39,19 +39,28 @@ struct Cut_to_the_CoffeeApp: App {
                         .transition(.opacity)
                         .zIndex(1)
                 } else if authManager.isAuthenticated {
-                    // User is authenticated - show home page
-                    HomeView()
-                        .transition(.opacity)
-                        .zIndex(2)
+                    // User is authenticated
+                    if authManager.needsOnboarding {
+                        // User needs to complete onboarding
+                        OnboardingView()
+                            .transition(.opacity)
+                            .zIndex(2)
+                    } else {
+                        // User has completed onboarding - show home page
+                        HomeView()
+                            .transition(.opacity)
+                            .zIndex(3)
+                    }
                 } else {
                     // User is not authenticated - show welcome/sign-in view
                     WelcomeView()
                         .transition(.opacity)
-                        .zIndex(3)
+                        .zIndex(4)
                 }
             }
             .animation(.easeInOut(duration: 0.4), value: authManager.isCheckingAuth)
             .animation(.easeInOut(duration: 0.4), value: authManager.isAuthenticated)
+            .animation(.easeInOut(duration: 0.4), value: authManager.needsOnboarding)
         }
     }
 }

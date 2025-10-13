@@ -30,6 +30,9 @@ class AuthenticationManager: ObservableObject {
     /// User's email (if available)
     @Published var userEmail: String?
     
+    /// Whether the user needs to complete onboarding
+    @Published var needsOnboarding: Bool = false
+    
     // MARK: - Singleton
     
     static let shared = AuthenticationManager()
@@ -40,6 +43,7 @@ class AuthenticationManager: ObservableObject {
     private let userIdKey = "userId"
     private let userFullNameKey = "userFullName"
     private let userEmailKey = "userEmail"
+    private let onboardingCompletedKey = "onboardingCompleted"
     
     // MARK: - Initialization
     
@@ -56,6 +60,10 @@ class AuthenticationManager: ObservableObject {
         currentUserId = UserDefaults.standard.string(forKey: userIdKey)
         userFullName = UserDefaults.standard.string(forKey: userFullNameKey)
         userEmail = UserDefaults.standard.string(forKey: userEmailKey)
+        
+        // Check if onboarding has been completed
+        let onboardingCompleted = UserDefaults.standard.bool(forKey: onboardingCompletedKey)
+        needsOnboarding = isAuthenticated && !onboardingCompleted
         
         // Complete the auth check with a minimum loading time for smooth UX
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
@@ -117,7 +125,22 @@ class AuthenticationManager: ObservableObject {
             self.currentUserId = userId
             self.userFullName = fullName
             self.userEmail = email
+            
+            // Check if onboarding is needed (new user won't have completed it yet)
+            let onboardingCompleted = UserDefaults.standard.bool(forKey: self.onboardingCompletedKey)
+            self.needsOnboarding = !onboardingCompleted
         }
+    }
+    
+    /// Mark onboarding as completed
+    func completeOnboarding() {
+        UserDefaults.standard.set(true, forKey: onboardingCompletedKey)
+        
+        DispatchQueue.main.async {
+            self.needsOnboarding = false
+        }
+        
+        print("✅ Onboarding completed")
     }
     
     /// Sign out the current user
@@ -127,6 +150,7 @@ class AuthenticationManager: ObservableObject {
         UserDefaults.standard.removeObject(forKey: userIdKey)
         UserDefaults.standard.removeObject(forKey: userFullNameKey)
         UserDefaults.standard.removeObject(forKey: userEmailKey)
+        UserDefaults.standard.removeObject(forKey: onboardingCompletedKey)
         
         // Update published properties
         DispatchQueue.main.async {
@@ -134,6 +158,7 @@ class AuthenticationManager: ObservableObject {
             self.currentUserId = nil
             self.userFullName = nil
             self.userEmail = nil
+            self.needsOnboarding = false
         }
         
         print("✅ Successfully signed out")

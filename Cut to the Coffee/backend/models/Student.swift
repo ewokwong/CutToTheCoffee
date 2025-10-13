@@ -18,7 +18,7 @@ struct Student: User {
     var profilePictureURL: String?
     
     // Student-specific fields
-    var resumeURL: String
+    var resumeURL: String?
     var degree: String
     var yearGraduating: Int
 }
@@ -31,7 +31,7 @@ extension Student {
         email: String,
         linkedinURL: String,
         universityID: UUID,
-        resumeURL: String,
+        resumeURL: String? = nil,
         degree: String,
         yearGraduating: Int,
         bio: String? = nil,
