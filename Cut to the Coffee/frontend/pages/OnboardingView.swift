@@ -25,7 +25,19 @@ struct OnboardingView: View {
     @State private var showError = false
     @State private var errorMessage = ""
     
+    // Intro animation state
+    @State private var showIntro = true
+    @State private var currentIntroPhrase = 0
+    @State private var phraseOpacity: Double = 0
+    
     let totalSteps = 3
+    
+    let introPhrases = [
+        "Hello!",
+        "We're so glad you're here.",
+        "Just before you jump in,",
+        "we need to explain a few things"
+    ]
     
     var body: some View {
         ZStack {
@@ -33,85 +45,14 @@ struct OnboardingView: View {
             AppTheme.lightGradient
                 .ignoresSafeArea()
             
-            VStack(spacing: 0) {
-                // Progress Bar
-                VStack(spacing: 12) {
-                    HStack(spacing: 8) {
-                        ForEach(0..<totalSteps, id: \.self) { step in
-                            RoundedRectangle(cornerRadius: 4)
-                                .fill(step <= currentStep ? AppTheme.coffeeBrown : AppTheme.latteBrown)
-                                .frame(height: 6)
-                        }
-                    }
-                    .padding(.horizontal, 20)
-                    
-                    Text("Step \(currentStep + 1) of \(totalSteps)")
-                        .font(.system(size: 14, weight: .medium))
-                        .foregroundColor(AppTheme.textSecondary)
-                }
-                .padding(.top, 60)
-                .padding(.bottom, 20)
-                
-                // Content
-                ScrollView {
-                    VStack(spacing: 24) {
-                        // Header
-                        VStack(spacing: 8) {
-                            Image(systemName: "cup.and.saucer.fill")
-                                .font(.system(size: 40))
-                                .foregroundColor(AppTheme.coffeeBrown)
-                            
-                            Text(stepTitle)
-                                .font(.system(size: 28, weight: .bold, design: .rounded))
-                                .coffeePrimaryText()
-                                .multilineTextAlignment(.center)
-                            
-                            Text(stepDescription)
-                                .font(.system(size: 16, weight: .medium))
-                                .foregroundColor(AppTheme.textSecondary)
-                                .multilineTextAlignment(.center)
-                                .padding(.horizontal, 20)
-                        }
-                        .padding(.top, 20)
-                        
-                        // Step Content
-                        VStack(spacing: 20) {
-                            switch currentStep {
-                            case 0:
-                                academicInfoStep
-                            case 1:
-                                resumeUploadStep
-                            case 2:
-                                profileDetailsStep
-                            default:
-                                EmptyView()
-                            }
-                        }
-                        .padding(.horizontal, 20)
-                        .padding(.top, 20)
-                    }
-                }
-                
-                // Navigation Buttons
-                VStack(spacing: 12) {
-                    Button(currentStep == totalSteps - 1 ? "Complete Onboarding" : "Continue") {
-                        handleContinue()
-                    }
-                    .buttonStyle(.coffeePrimary)
-                    .disabled(!canProceed)
-                    .opacity(canProceed ? 1.0 : 0.5)
-                    
-                    if currentStep > 0 {
-                        Button("Back") {
-                            withAnimation {
-                                currentStep -= 1
-                            }
-                        }
-                        .buttonStyle(.coffeeSecondary)
-                    }
-                }
-                .padding(.horizontal, 20)
-                .padding(.vertical, 20)
+            if showIntro {
+                // Intro animation view
+                introAnimationView
+                    .transition(.opacity)
+            } else {
+                // Main onboarding view
+                onboardingContentView
+                    .transition(.opacity)
             }
         }
         .alert("Error", isPresented: $showError) {
@@ -121,6 +62,150 @@ struct OnboardingView: View {
         }
         .sheet(isPresented: $showingDocumentPicker) {
             DocumentPicker(onDocumentPicked: handleDocumentPicked)
+        }
+        .onAppear {
+            startIntroAnimation()
+        }
+    }
+    
+    // MARK: - Intro Animation View
+    
+    private var introAnimationView: some View {
+        ZStack {
+            VStack {
+                Spacer()
+                
+                // Animated text
+                Text(introPhrases[currentIntroPhrase])
+                    .font(.system(size: 36, weight: .bold, design: .rounded))
+                    .foregroundColor(AppTheme.coffeeBrown)
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal, 40)
+                    .opacity(phraseOpacity)
+                
+                Spacer()
+            }
+            
+            // Skip button
+            VStack {
+                HStack {
+                    Spacer()
+                    Button("Skip") {
+                        skipIntro()
+                    }
+                    .font(.system(size: 16, weight: .medium))
+                    .foregroundColor(AppTheme.textSecondary)
+                    .padding(.horizontal, 20)
+                    .padding(.top, 50)
+                }
+                Spacer()
+            }
+        }
+    }
+    
+    // MARK: - Main Onboarding Content View
+    
+    private var onboardingContentView: some View {
+        VStack(spacing: 0) {
+            // Top bar with back button
+            HStack {
+                Button(action: {
+                    authManager.signOut()
+                }) {
+                    HStack(spacing: 6) {
+                        Image(systemName: "chevron.left")
+                            .font(.system(size: 16, weight: .semibold))
+                        Text("Back")
+                            .font(.system(size: 16, weight: .medium))
+                    }
+                    .foregroundColor(AppTheme.coffeeBrown)
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 8)
+                }
+                
+                Spacer()
+            }
+            .padding(.horizontal, 8)
+            .padding(.top, 20)
+            
+            // Progress Bar
+            VStack(spacing: 12) {
+                HStack(spacing: 8) {
+                    ForEach(0..<totalSteps, id: \.self) { step in
+                        RoundedRectangle(cornerRadius: 4)
+                            .fill(step <= currentStep ? AppTheme.coffeeBrown : AppTheme.latteBrown)
+                            .frame(height: 6)
+                    }
+                }
+                .padding(.horizontal, 20)
+                
+                Text("Step \(currentStep + 1) of \(totalSteps)")
+                    .font(.system(size: 14, weight: .medium))
+                    .foregroundColor(AppTheme.textSecondary)
+            }
+            .padding(.top, 60)
+            .padding(.bottom, 20)
+            
+            // Content
+            ScrollView {
+                VStack(spacing: 24) {
+                    // Header
+                    VStack(spacing: 8) {
+                        Image(systemName: "cup.and.saucer.fill")
+                            .font(.system(size: 40))
+                            .foregroundColor(AppTheme.coffeeBrown)
+                        
+                        Text(stepTitle)
+                            .font(.system(size: 28, weight: .bold, design: .rounded))
+                            .coffeePrimaryText()
+                            .multilineTextAlignment(.center)
+                        
+                        Text(stepDescription)
+                            .font(.system(size: 16, weight: .medium))
+                            .foregroundColor(AppTheme.textSecondary)
+                            .multilineTextAlignment(.center)
+                            .padding(.horizontal, 20)
+                    }
+                    .padding(.top, 20)
+                    
+                    // Step Content
+                    VStack(spacing: 20) {
+                        switch currentStep {
+                        case 0:
+                            academicInfoStep
+                        case 1:
+                            resumeUploadStep
+                        case 2:
+                            profileDetailsStep
+                        default:
+                            EmptyView()
+                        }
+                    }
+                    .padding(.horizontal, 20)
+                    .padding(.top, 20)
+                }
+            }
+            
+            // Navigation Buttons
+            VStack(spacing: 12) {
+                Button(currentStep == totalSteps - 1 ? "Complete Onboarding" : "Continue") {
+                    handleContinue()
+                }
+                .buttonStyle(.coffeePrimary)
+                .disabled(!canProceed)
+                .opacity(canProceed ? 1.0 : 0.5)
+                
+                if currentStep > 0 {
+                    Button("Back") {
+                        withAnimation {
+                            currentStep -= 1
+                        }
+                    }
+                    .buttonStyle(.coffeeSecondary)
+                }
+            }
+            .padding(.horizontal, 20)
+            .padding(.vertical, 20)
         }
     }
     
@@ -279,6 +364,49 @@ struct OnboardingView: View {
         }
     }
     
+    // MARK: - Intro Animation Actions
+    
+    private func startIntroAnimation() {
+        animateNextPhrase()
+    }
+    
+    private func animateNextPhrase() {
+        // Fade in current phrase
+        withAnimation(.easeIn(duration: 0.6)) {
+            phraseOpacity = 1.0
+        }
+        
+        // Wait, then fade out and move to next phrase
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
+            withAnimation(.easeOut(duration: 0.5)) {
+                phraseOpacity = 0.0
+            }
+            
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
+                if currentIntroPhrase < introPhrases.count - 1 {
+                    currentIntroPhrase += 1
+                    animateNextPhrase()
+                } else {
+                    // Animation complete, show main content
+                    completeIntro()
+                }
+            }
+        }
+    }
+    
+    private func completeIntro() {
+        withAnimation(.easeInOut(duration: 0.6)) {
+            showIntro = false
+        }
+    }
+    
+    private func skipIntro() {
+        currentIntroPhrase = introPhrases.count - 1
+        withAnimation(.easeInOut(duration: 0.4)) {
+            showIntro = false
+        }
+    }
+    
     // MARK: - Actions
     
     private func handleContinue() {
@@ -318,17 +446,58 @@ struct OnboardingView: View {
             return
         }
         
-        // TODO: Create student profile in Firebase
-        // For now, we'll just mark onboarding as complete
-        print("✅ Onboarding data collected:")
-        print("   Degree: \(degree)")
-        print("   Graduation Year: \(graduationYear)")
-        print("   LinkedIn: \(linkedinURL)")
-        print("   Bio: \(bio)")
-        print("   Resume: \(resumeFileName)")
-        
-        // Mark onboarding as complete
-        authManager.completeOnboarding()
+        // Create student profile in Firebase
+        Task {
+            do {
+                // Get user info from auth manager
+                guard let appleUserId = authManager.currentUserId,
+                      let name = authManager.userFullName,
+                      let email = authManager.userEmail else {
+                    showError(message: "Missing user information. Please sign in again.")
+                    return
+                }
+                
+                // TODO: Get actual university ID (for now using a placeholder)
+                // You'll need to implement university selection in onboarding
+                let placeholderUniversityId = UUID()
+                
+                // Create student profile
+                let student = Student(
+                    name: name,
+                    email: email,
+                    linkedinURL: linkedinURL,
+                    universityID: placeholderUniversityId,
+                    appleUserId: appleUserId,
+                    resumeURL: resumeFileName, // TODO: Replace with actual uploaded URL from Firebase Storage
+                    degree: degree,
+                    yearGraduating: graduationYear,
+                    bio: bio.isEmpty ? nil : bio,
+                    profilePictureURL: nil
+                )
+                
+                // Save to Firebase
+                let controller = StudentController()
+                let _ = try await controller.createStudent(student)
+                
+                print("✅ Student profile created in Firebase:")
+                print("   ID: \(student.id)")
+                print("   Name: \(name)")
+                print("   Email: \(email)")
+                print("   Degree: \(degree)")
+                print("   Graduation Year: \(graduationYear)")
+                print("   LinkedIn: \(linkedinURL)")
+                print("   Bio: \(bio)")
+                print("   Resume: \(resumeFileName)")
+                
+                // Mark onboarding as complete
+                await MainActor.run {
+                    authManager.completeOnboarding()
+                }
+            } catch {
+                print("❌ Error creating student profile: \(error.localizedDescription)")
+                showError(message: "Failed to create profile. Please try again.")
+            }
+        }
     }
     
     private func showError(message: String) {

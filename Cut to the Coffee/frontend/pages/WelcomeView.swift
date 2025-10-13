@@ -85,6 +85,7 @@ struct WelcomeView: View {
                             authManager.currentUserId = placeholderUserId
                             authManager.userFullName = placeholderName
                             authManager.userEmail = placeholderEmail
+                            authManager.needsOnboarding = true // Force onboarding for new users
                         }
                         
                         print("✅ Signed in with placeholder data")

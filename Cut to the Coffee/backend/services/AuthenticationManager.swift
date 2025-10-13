@@ -31,7 +31,7 @@ class AuthenticationManager: ObservableObject {
     @Published var userEmail: String?
     
     /// Whether the user needs to complete onboarding
-    @Published var needsOnboarding: Bool = false // Set to false to skip onboarding during development
+    @Published var needsOnboarding: Bool = false
     
     // MARK: - Singleton
     
@@ -63,8 +63,7 @@ class AuthenticationManager: ObservableObject {
         
         // Check if onboarding has been completed
         let onboardingCompleted = UserDefaults.standard.bool(forKey: onboardingCompletedKey)
-        // TEMP: Skip onboarding for development
-        needsOnboarding = false // Change back to: isAuthenticated && !onboardingCompleted
+        needsOnboarding = isAuthenticated && !onboardingCompleted
         
         // Complete the auth check with a minimum loading time for smooth UX
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
@@ -90,12 +89,19 @@ class AuthenticationManager: ObservableObject {
         
         let email = appleIDCredential.email
         
-        // Save authentication state
-        saveAuthenticationState(
-            userId: userId,
-            fullName: fullName,
-            email: email
-        )
+        // Save authentication state and check onboarding status
+        Task {
+            let needsOnboarding = await checkNeedsOnboarding(appleUserId: userId)
+            
+            await MainActor.run {
+                saveAuthenticationState(
+                    userId: userId,
+                    fullName: fullName,
+                    email: email,
+                    needsOnboarding: needsOnboarding
+                )
+            }
+        }
         
         print("✅ Successfully signed in with Apple")
         print("   User ID: \(userId)")
@@ -108,7 +114,7 @@ class AuthenticationManager: ObservableObject {
     }
     
     /// Save authentication state to UserDefaults
-    private func saveAuthenticationState(userId: String, fullName: String?, email: String?) {
+    private func saveAuthenticationState(userId: String, fullName: String?, email: String?, needsOnboarding: Bool? = nil) {
         UserDefaults.standard.set(true, forKey: isAuthenticatedKey)
         UserDefaults.standard.set(userId, forKey: userIdKey)
         
@@ -121,16 +127,19 @@ class AuthenticationManager: ObservableObject {
         }
         
         // Update published properties
-        DispatchQueue.main.async {
-            self.isAuthenticated = true
-            self.currentUserId = userId
-            self.userFullName = fullName
-            self.userEmail = email
-            
-            // Check if onboarding is needed (new user won't have completed it yet)
+        self.isAuthenticated = true
+        self.currentUserId = userId
+        self.userFullName = fullName
+        self.userEmail = email
+        
+        // Set onboarding status
+        if let needsOnboarding = needsOnboarding {
+            // Use the provided onboarding status (from checking Student profile)
+            self.needsOnboarding = needsOnboarding
+        } else {
+            // Fallback: check if onboarding was previously completed
             let onboardingCompleted = UserDefaults.standard.bool(forKey: self.onboardingCompletedKey)
-            // TEMP: Skip onboarding for development
-            self.needsOnboarding = false // Change back to: !onboardingCompleted
+            self.needsOnboarding = !onboardingCompleted
         }
     }
     
@@ -172,6 +181,32 @@ class AuthenticationManager: ObservableObject {
             self.isCheckingAuth = false
         }
         print("ℹ️ Continuing as guest")
+    }
+    
+    /// Check if user needs onboarding by fetching their Student profile
+    /// Returns true if no profile exists OR if profile exists but has no resumeURL
+    func checkNeedsOnboarding(appleUserId: String) async -> Bool {
+        let repository = StudentRepository()
+        
+        do {
+            // Try to fetch student by Apple User ID
+            let student = try await repository.fetchByAppleUserId(appleUserId)
+            
+            if let student = student {
+                // Student profile exists - check if they have a resume
+                let hasResume = student.resumeURL != nil && !student.resumeURL!.isEmpty
+                print("ℹ️ Student profile found. Has resume: \(hasResume)")
+                return !hasResume // Needs onboarding if no resume
+            } else {
+                // No student profile exists - needs onboarding
+                print("ℹ️ No student profile found. Needs onboarding.")
+                return true
+            }
+        } catch {
+            print("⚠️ Error checking onboarding status: \(error.localizedDescription)")
+            // If error, assume needs onboarding to be safe
+            return true
+        }
     }
 }
 

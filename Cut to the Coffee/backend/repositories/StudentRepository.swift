@@ -52,6 +52,14 @@ class StudentRepository {
         return try snapshot.documents.compactMap { try $0.data(as: Student.self) }
     }
     
+    /// Fetch a student by Apple User ID
+    func fetchByAppleUserId(_ appleUserId: String) async throws -> Student? {
+        let snapshot = try await db.collection(collectionName)
+            .whereField("appleUserId", isEqualTo: appleUserId)
+            .getDocuments()
+        return try snapshot.documents.first?.data(as: Student.self)
+    }
+    
     /// Listen to real-time updates for all students
     func observeAll(completion: @escaping ([Student]) -> Void) -> ListenerRegistration {
         return db.collection(collectionName)

@@ -17,6 +17,9 @@ struct Student: User {
     var bio: String?
     var profilePictureURL: String?
     
+    // Authentication
+    var appleUserId: String? // Link to Apple Sign In user ID
+    
     // Student-specific fields
     var resumeURL: String?
     var degree: String
@@ -31,6 +34,7 @@ extension Student {
         email: String,
         linkedinURL: String,
         universityID: UUID,
+        appleUserId: String? = nil,
         resumeURL: String? = nil,
         degree: String,
         yearGraduating: Int,
@@ -42,6 +46,7 @@ extension Student {
         self.email = email
         self.linkedinURL = linkedinURL
         self.universityID = universityID
+        self.appleUserId = appleUserId
         self.bio = bio
         self.profilePictureURL = profilePictureURL
         self.resumeURL = resumeURL
