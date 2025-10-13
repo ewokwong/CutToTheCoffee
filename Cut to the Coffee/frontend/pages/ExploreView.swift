@@ -26,30 +26,8 @@ struct ExploreView: View {
                     .ignoresSafeArea(edges: .all)
                 
                 VStack(spacing: 0) {
-                    // Header
+                    // Search Bar and Filter Chips
                     VStack(spacing: 16) {
-                        HStack {
-                            VStack(alignment: .leading, spacing: 4) {
-                                Text("Explore")
-                                    .font(.system(size: 32, weight: .bold, design: .rounded))
-                                    .coffeePrimaryText()
-                                
-                                if let userName = authManager.userFullName?.components(separatedBy: " ").first {
-                                    Text("Welcome back, \(userName)!")
-                                        .font(.system(size: 16, weight: .medium))
-                                        .foregroundColor(AppTheme.textSecondary)
-                                }
-                            }
-                            
-                            Spacer()
-                            
-                            Image(systemName: "cup.and.saucer.fill")
-                                .font(.system(size: 32))
-                                .foregroundColor(AppTheme.coffeeBrown)
-                        }
-                        .padding(.horizontal, 20)
-                        .padding(.top, 16)
-                        
                         // Search Bar
                         HStack {
                             Image(systemName: "magnifyingglass")
@@ -66,23 +44,8 @@ struct ExploreView: View {
                                 .stroke(AppTheme.latteBrown, lineWidth: 1)
                         )
                         .padding(.horizontal, 20)
-                        
-                        // Filter Chips
-                        ScrollView(.horizontal, showsIndicators: false) {
-                            HStack(spacing: 12) {
-                                ForEach(ExploreFilter.allCases, id: \.self) { filter in
-                                    FilterChip(
-                                        title: filter.rawValue,
-                                        isSelected: selectedFilter == filter
-                                    ) {
-                                        withAnimation(.easeInOut(duration: 0.2)) {
-                                            selectedFilter = filter
-                                        }
-                                    }
-                                }
-                            }
-                            .padding(.horizontal, 20)
-                        }
+                        .padding(.top, 16)
+
                     }
                     .padding(.bottom, 16)
                     

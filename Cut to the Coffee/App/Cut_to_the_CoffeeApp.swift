@@ -52,15 +52,24 @@ struct Cut_to_the_CoffeeApp: App {
                             .zIndex(3)
                     }
                 } else {
-                    // User is not authenticated - show welcome/sign-in view
-                    WelcomeView()
-                        .transition(.opacity)
-                        .zIndex(4)
+                    // User is not authenticated
+                    if authManager.isGuestMode {
+                        // Show anonymous network view for guest users
+                        AnonymousNetworkView()
+                            .transition(.opacity)
+                            .zIndex(4)
+                    } else {
+                        // Show welcome/sign-in view
+                        WelcomeView()
+                            .transition(.opacity)
+                            .zIndex(5)
+                    }
                 }
             }
             .animation(.easeInOut(duration: 0.4), value: authManager.isCheckingAuth)
             .animation(.easeInOut(duration: 0.4), value: authManager.isAuthenticated)
             .animation(.easeInOut(duration: 0.4), value: authManager.needsOnboarding)
+            .animation(.easeInOut(duration: 0.4), value: authManager.isGuestMode)
         }
     }
 }

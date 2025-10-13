@@ -33,6 +33,9 @@ class AuthenticationManager: ObservableObject {
     /// Whether the user needs to complete onboarding
     @Published var needsOnboarding: Bool = false
     
+    /// Whether the user is browsing as a guest
+    @Published var isGuestMode: Bool = false
+    
     // MARK: - Singleton
     
     static let shared = AuthenticationManager()
@@ -170,6 +173,7 @@ class AuthenticationManager: ObservableObject {
             self.userFullName = nil
             self.userEmail = nil
             self.needsOnboarding = false
+            self.isGuestMode = false
         }
         
         print("✅ Successfully signed out")
@@ -179,8 +183,17 @@ class AuthenticationManager: ObservableObject {
     func continueAsGuest() {
         DispatchQueue.main.async {
             self.isCheckingAuth = false
+            self.isGuestMode = true
         }
         print("ℹ️ Continuing as guest")
+    }
+    
+    /// Exit guest mode and return to welcome screen
+    func exitGuestMode() {
+        DispatchQueue.main.async {
+            self.isGuestMode = false
+        }
+        print("ℹ️ Exiting guest mode")
     }
     
     /// Check if user needs onboarding by fetching their Student profile

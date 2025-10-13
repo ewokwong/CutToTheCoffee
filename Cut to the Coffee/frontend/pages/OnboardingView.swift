@@ -124,6 +124,20 @@ struct OnboardingView: View {
                 }
                 
                 Spacer()
+                
+                // Test button to skip to homepage
+                Button(action: {
+                    authManager.completeOnboarding()
+                }) {
+                    Text("TEST: Skip to Home")
+                        .font(.system(size: 14, weight: .semibold))
+                        .foregroundColor(AppTheme.creamWhite)
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 8)
+                        .background(AppTheme.coffeeBrown)
+                        .cornerRadius(8)
+                }
+                .padding(.horizontal, 8)
             }
             .padding(.horizontal, 8)
             .padding(.top, 20)
