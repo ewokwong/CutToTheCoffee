@@ -45,7 +45,7 @@ struct ContentView: View {
                                 Spacer()
                             }
                             
-                            Text("Connect with professionals who can refer you to your dream company")
+                            Text("Skip the niceties, connect with professionals who can refer you to your dream company")
                                 .font(.system(size: 14))
                                 .foregroundColor(AppTheme.textSecondary)
                                 .lineLimit(2)

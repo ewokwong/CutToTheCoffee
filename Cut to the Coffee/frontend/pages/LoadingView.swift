@@ -6,13 +6,10 @@
 //
 
 import SwiftUI
-import AuthenticationServices
 
 struct LoadingView: View {
     @State private var isAnimating = false
     @State private var opacity: Double = 0
-    @State private var loadingComplete = false
-    @State private var showButtons = false
     
     var body: some View {
         ZStack {
@@ -60,94 +57,24 @@ struct LoadingView: View {
                     .foregroundColor(AppTheme.creamWhite)
                     .opacity(opacity)
                 
-                // Loading indicator - fades out when complete
-                if !loadingComplete {
-                    VStack(spacing: 12) {
-                        ProgressView()
-                            .progressViewStyle(CircularProgressViewStyle(tint: AppTheme.pureWhite))
-                            .scaleEffect(1.5)
-                            .padding(.top, 10)
-                        
-                        Text("Brewing your experience...")
-                            .font(.system(size: 16, weight: .medium))
-                            .foregroundColor(AppTheme.textOnDark.opacity(0.8))
-                    }
-                    .transition(.opacity.combined(with: .scale))
+                // Loading indicator
+                VStack(spacing: 12) {
+                    ProgressView()
+                        .progressViewStyle(CircularProgressViewStyle(tint: AppTheme.pureWhite))
+                        .scaleEffect(1.5)
+                        .padding(.top, 10)
+                    
+                    Text("Brewing your experience...")
+                        .font(.system(size: 16, weight: .medium))
+                        .foregroundColor(AppTheme.textOnDark.opacity(0.8))
                 }
-                
-                // Buttons - slide in when loading complete
-                if showButtons {
-                    VStack(spacing: 16) {
-                        // Sign in with Apple button
-                        SignInWithAppleButton(
-                            onRequest: { request in
-                                request.requestedScopes = [.fullName, .email]
-                            },
-                            onCompletion: { result in
-                                switch result {
-                                case .success(let authorization):
-                                    // Handle successful authorization
-                                    print("Authorization successful: \(authorization)")
-                                case .failure(let error):
-                                    // Handle error
-                                    print("Authorization failed: \(error.localizedDescription)")
-                                }
-                            }
-                        )
-                        .signInWithAppleButtonStyle(.white)
-                        .frame(height: 50)
-                        .cornerRadius(12)
-                        .padding(.horizontal, 40)
-                        
-                        // Spacer and description for explore network
-                        VStack(spacing: 8) {
-                            Text("Just looking around?")
-                                .font(.system(size: 14, weight: .medium))
-                                .foregroundColor(AppTheme.textOnDark.opacity(0.9))
-                            
-                            // Explore network button
-                            Button {
-                                // Action for explore network
-                                print("Explore network tapped")
-                            } label: {
-                                Text("Explore Our Network")
-                                    .font(.system(size: 16, weight: .semibold))
-                                    .foregroundColor(AppTheme.coffeeBrown)
-                                    .frame(maxWidth: .infinity)
-                                    .padding(.vertical, 14)
-                                    .background(AppTheme.creamWhite)
-                                    .cornerRadius(12)
-                            }
-                            .padding(.horizontal, 40)
-                        }
-                        .padding(.top, 8)
-                    }
-                    .padding(.top, 10)
-                    .transition(.asymmetric(
-                        insertion: .move(edge: .bottom).combined(with: .opacity),
-                        removal: .opacity
-                    ))
-                }
+                .opacity(opacity)
             }
         }
         .onAppear {
             isAnimating = true
             withAnimation(.easeIn(duration: 0.5)) {
                 opacity = 1.0
-            }
-            
-            // Simulate loading completion after 2 seconds
-            DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
-                withAnimation(.easeOut(duration: 0.4)) {
-                    loadingComplete = true
-                }
-                
-                // Show buttons slightly after loading disappears
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-                    withAnimation(.spring(response: 0.6, dampingFraction: 0.8)) {
-                        showButtons = true
-                    }
-                }
             }
         }
     }
