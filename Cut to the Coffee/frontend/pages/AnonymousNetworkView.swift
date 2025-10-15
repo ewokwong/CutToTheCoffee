@@ -1,6 +1,6 @@
 //
 //  AnonymousNetworkView.swift
-//  Cut to the Coffee
+//  Cut the Coffee
 //
 //  Anonymous network browsing view for guest users
 //

@@ -1,6 +1,6 @@
 //
 //  ExploreView.swift
-//  Cut to the Coffee
+//  Cut the Coffee
 //
 //  Explore page - browse referrers and companies
 //

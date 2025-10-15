@@ -1,6 +1,6 @@
 //
 //  University.swift
-//  Cut to the Coffee
+//  Cut the Coffee
 //
 //  Created by Ethan Kwong on 12/10/2025.
 //

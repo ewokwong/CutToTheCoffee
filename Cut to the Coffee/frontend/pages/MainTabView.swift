@@ -1,6 +1,6 @@
 //
 //  MainTabView.swift
-//  Cut to the Coffee
+//  Cut the Coffee
 //
 //  Main container view with bottom navigation bar
 //

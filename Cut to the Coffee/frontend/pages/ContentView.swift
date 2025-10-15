@@ -1,6 +1,6 @@
 //
 //  ContentView.swift
-//  Cut to the Coffee
+//  Cut the Coffee
 //
 //  Created by Ethan Kwong on 12/10/2025.
 //
@@ -22,7 +22,7 @@ struct ContentView: View {
                             .font(.system(size: 50))
                             .foregroundColor(AppTheme.coffeeBrown)
                         
-                        Text("Cut to the Coffee")
+                        Text("Cut the Coffee")
                             .font(.system(size: 32, weight: .bold, design: .rounded))
                             .coffeePrimaryText()
                         

@@ -1,6 +1,6 @@
 //
 //  ReferrerRepository.swift
-//  Cut to the Coffee
+//  Cut the Coffee
 //
 //  Firestore repository for Referrer operations
 //

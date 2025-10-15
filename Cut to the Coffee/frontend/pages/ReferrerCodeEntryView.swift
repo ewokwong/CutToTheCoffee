@@ -1,6 +1,6 @@
 //
 //  ReferrerCodeEntryView.swift
-//  Cut to the Coffee
+//  Cut the Coffee
 //
 //  Screen for referrers to enter their access code
 //

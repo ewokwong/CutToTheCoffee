@@ -1,6 +1,6 @@
 //
 //  CompaniesExplorerView.swift
-//  Cut to the Coffee
+//  Cut the Coffee
 //
 //  Explore network of companies and their open roles
 //

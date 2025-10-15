@@ -1,4 +1,4 @@
-# Cut to the Coffee - Project Structure
+# Cut the Coffee - Project Structure
 
 ## 📁 Folder Organization
 

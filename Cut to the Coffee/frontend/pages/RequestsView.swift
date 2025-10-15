@@ -1,6 +1,6 @@
 //
 //  RequestsView.swift
-//  Cut to the Coffee
+//  Cut the Coffee
 //
 //  View for managing user's referral requests
 //

@@ -1,6 +1,6 @@
 //
 //  ProfileView.swift
-//  Cut to the Coffee
+//  Cut the Coffee
 //
 //  User profile page
 //

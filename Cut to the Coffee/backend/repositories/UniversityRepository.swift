@@ -1,6 +1,6 @@
 //
 //  UniversityRepository.swift
-//  Cut to the Coffee
+//  Cut the Coffee
 //
 //  Firestore repository for University operations
 //

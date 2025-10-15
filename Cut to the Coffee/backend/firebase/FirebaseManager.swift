@@ -1,6 +1,6 @@
 //
 //  FirebaseManager.swift
-//  Cut to the Coffee
+//  Cut the Coffee
 //
 //  Firebase configuration and singleton manager
 //

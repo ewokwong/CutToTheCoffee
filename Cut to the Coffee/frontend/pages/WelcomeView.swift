@@ -1,6 +1,6 @@
 //
 //  WelcomeView.swift
-//  Cut to the Coffee
+//  Cut the Coffee
 //
 //  Welcome screen with sign-in options
 //
@@ -137,7 +137,7 @@ struct WelcomeView: View {
                 .padding(.bottom, 20)
                 
                 // App name
-                Text("Cut to the Coffee")
+                Text("Cut the Coffee")
                     .font(.system(size: 32, weight: .bold, design: .rounded))
                     .foregroundColor(AppTheme.creamWhite)
                     .opacity(opacity)

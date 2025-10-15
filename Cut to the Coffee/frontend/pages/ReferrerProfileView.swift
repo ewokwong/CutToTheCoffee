@@ -1,6 +1,6 @@
 //
 //  ReferrerProfileView.swift
-//  Cut to the Coffee
+//  Cut the Coffee
 //
 //  Referrer profile page with request functionality
 //

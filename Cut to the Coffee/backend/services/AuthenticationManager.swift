@@ -1,6 +1,6 @@
 //
 //  AuthenticationManager.swift
-//  Cut to the Coffee
+//  Cut the Coffee
 //
 //  Authentication state management for the app
 //

@@ -1,6 +1,6 @@
 //
 //  ReferrerHomeView.swift
-//  Cut to the Coffee
+//  Cut the Coffee
 //
 //  Home page for referrers (placeholder)
 //
