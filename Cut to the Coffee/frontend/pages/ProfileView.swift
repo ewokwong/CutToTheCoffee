@@ -64,28 +64,6 @@ struct ProfileView: View {
                         }
                         .padding(.top, 32)
                         
-                        // Profile Stats
-                        HStack(spacing: 12) {
-                            ProfileStatCard(
-                                icon: "message.fill",
-                                value: "12",
-                                label: "Requests"
-                            )
-                            
-                            ProfileStatCard(
-                                icon: "star.fill",
-                                value: "8",
-                                label: "Completed"
-                            )
-                            
-                            ProfileStatCard(
-                                icon: "calendar",
-                                value: "Oct 2024",
-                                label: "Joined"
-                            )
-                        }
-                        .padding(.horizontal, 20)
-                        
                         // Profile Information
                         VStack(spacing: 16) {
                             ProfileInfoSection(title: "Academic Information") {
@@ -123,41 +101,6 @@ struct ProfileView: View {
                                     isLink: true
                                 )
                             }
-                            
-                            ProfileInfoSection(title: "About") {
-                                Text("Passionate computer science student looking to break into tech. Interested in software engineering and product management roles.")
-                                    .font(.system(size: 14))
-                                    .foregroundColor(AppTheme.textSecondary)
-                                    .multilineTextAlignment(.leading)
-                            }
-                        }
-                        .padding(.horizontal, 20)
-                        
-                        // Settings & Actions
-                        VStack(spacing: 12) {
-                            SettingsButton(
-                                icon: "bell.fill",
-                                title: "Notifications",
-                                action: {}
-                            )
-                            
-                            SettingsButton(
-                                icon: "lock.fill",
-                                title: "Privacy & Security",
-                                action: {}
-                            )
-                            
-                            SettingsButton(
-                                icon: "questionmark.circle.fill",
-                                title: "Help & Support",
-                                action: {}
-                            )
-                            
-                            SettingsButton(
-                                icon: "info.circle.fill",
-                                title: "About",
-                                action: {}
-                            )
                         }
                         .padding(.horizontal, 20)
                         

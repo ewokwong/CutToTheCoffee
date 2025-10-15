@@ -14,7 +14,7 @@ struct RequestsView: View {
     enum RequestFilter: String, CaseIterable {
         case all = "All"
         case pending = "Pending"
-        case read = "Read"
+        case interested = "Interested"
         case accepted = "Accepted"
     }
     
@@ -22,12 +22,13 @@ struct RequestsView: View {
     let sampleRequests: [(referrerName: String, company: String, role: String, status: RequestStatus, date: String)] = [
         ("John Smith", "Google", "Software Engineer", .pending, "2 days ago"),
         ("Sarah Johnson", "Microsoft", "Product Manager", .accepted, "3 days ago"),
-        ("Mike Chen", "Amazon", "Data Scientist", .read, "5 days ago"),
+        ("Mike Chen", "Amazon", "Data Scientist", .interested, "5 days ago"),
         ("Emily Davis", "Meta", "Software Engineer", .pending, "1 week ago"),
         ("David Lee", "Apple", "UX Designer", .accepted, "1 week ago"),
-        ("Jessica Brown", "Netflix", "Software Engineer", .read, "2 weeks ago"),
-        ("Chris Wilson", "Tesla", "Consultant", .pending, "2 weeks ago"),
-        ("Amanda Garcia", "Uber", "Product Manager", .accepted, "3 weeks ago"),
+        ("Jessica Brown", "Netflix", "Software Engineer", .interested, "2 weeks ago"),
+        ("Chris Wilson", "Google", "Data Scientist", .pending, "2 weeks ago"),
+        ("Amanda Garcia", "Microsoft", "Product Manager", .accepted, "3 weeks ago"),
+        ("Tom Anderson", "Amazon", "Software Engineer", .interested, "3 weeks ago"),
     ]
     
     var filteredRequests: [(referrerName: String, company: String, role: String, status: RequestStatus, date: String)] {
@@ -38,12 +39,19 @@ struct RequestsView: View {
         }
     }
     
+    // Group requests by company
+    var groupedRequests: [(company: String, requests: [(referrerName: String, company: String, role: String, status: RequestStatus, date: String)])] {
+        let grouped = Dictionary(grouping: filteredRequests) { $0.company }
+        return grouped.map { (company: $0.key, requests: $0.value) }
+            .sorted { $0.company < $1.company }
+    }
+    
     var pendingCount: Int {
         sampleRequests.filter { $0.status == .pending }.count
     }
     
-    var readCount: Int {
-        sampleRequests.filter { $0.status == .read }.count
+    var interestedCount: Int {
+        sampleRequests.filter { $0.status == .interested }.count
     }
     
     var acceptedCount: Int {
@@ -78,6 +86,16 @@ struct RequestsView: View {
                     VStack(spacing: 0) {
                     // Header
                     VStack(spacing: 16) {
+                        // Title
+                        HStack {
+                            Text("Your Requests")
+                                .font(.system(size: 28, weight: .bold))
+                                .coffeePrimaryText()
+                            
+                            Spacer()
+                        }
+                        .padding(.horizontal, 20)
+                        .padding(.top, 16)
                         
                         // Filter Chips
                         ScrollView(.horizontal, showsIndicators: false) {
@@ -101,58 +119,29 @@ struct RequestsView: View {
                     // Content
                     ScrollView {
                         VStack(spacing: 16) {
-                            // Stats Cards
-                            HStack(spacing: 12) {
-                                StatCard(
-                                    value: "\(pendingCount)",
-                                    label: "Pending"
-                                )
-                                
-                                StatCard(
-                                    value: "\(readCount)",
-                                    label: "Read"
-                                )
-                                
-                                StatCard(
-                                    value: "\(acceptedCount)",
-                                    label: "Accepted"
-                                )
-                            }
-                            .padding(.horizontal, 20)
-                            
-                            // Requests List
-                            VStack(spacing: 12) {
-                                if filteredRequests.isEmpty {
-                                    VStack(spacing: 12) {
-                                        Image(systemName: "tray")
-                                            .font(.system(size: 48))
-                                            .foregroundColor(AppTheme.textSecondary)
-                                            .padding(.top, 40)
-                                        
-                                        Text("No \(selectedFilter.rawValue.lowercased()) requests")
-                                            .font(.system(size: 18, weight: .semibold))
-                                            .foregroundColor(AppTheme.textSecondary)
-                                    }
-                                    .padding(.top, 20)
-                                } else {
-                                    ForEach(Array(filteredRequests.enumerated()), id: \.offset) { index, request in
-                                        RequestItemCard(
-                                            referrerName: request.referrerName,
-                                            company: request.company,
-                                            role: request.role,
-                                            status: request.status,
-                                            date: request.date
-                                        )
-                                        .onTapGesture {
-                                            withAnimation(.easeInOut(duration: 0.3)) {
-                                                selectedReferrer = (request.referrerName, request.company, request.role, "University")
-                                            }
-                                        }
-                                    }
+                            if groupedRequests.isEmpty {
+                                VStack(spacing: 12) {
+                                    Image(systemName: "tray")
+                                        .font(.system(size: 48))
+                                        .foregroundColor(AppTheme.textSecondary)
+                                        .padding(.top, 40)
+                                    
+                                    Text("No \(selectedFilter.rawValue.lowercased()) requests")
+                                        .font(.system(size: 18, weight: .semibold))
+                                        .foregroundColor(AppTheme.textSecondary)
+                                }
+                                .padding(.top, 20)
+                            } else {
+                                // Show company cards
+                                ForEach(Array(groupedRequests.enumerated()), id: \.offset) { _, group in
+                                    CompanyRequestCard(
+                                        company: group.company,
+                                        requests: group.requests
+                                    )
                                 }
                             }
-                            .padding(.horizontal, 20)
                         }
+                        .padding(.horizontal, 20)
                         .padding(.top, 8)
                         .padding(.bottom, 100) // Space for bottom nav bar
                     }
@@ -185,6 +174,114 @@ struct StatCard: View {
         .background(AppTheme.creamWhite)
         .cornerRadius(16)
         .shadow(color: AppTheme.shadow, radius: 4, x: 0, y: 2)
+    }
+}
+
+// MARK: - Company Request Card
+
+struct CompanyRequestCard: View {
+    let company: String
+    let requests: [(referrerName: String, company: String, role: String, status: RequestStatus, date: String)]
+    
+    // Calculate status counts for this company
+    var statusCounts: (pending: Int, interested: Int, accepted: Int) {
+        let pending = requests.filter { $0.status == .pending }.count
+        let interested = requests.filter { $0.status == .interested }.count
+        let accepted = requests.filter { $0.status == .accepted }.count
+        return (pending, interested, accepted)
+    }
+    
+    // Get the most recent request date
+    var mostRecentDate: String {
+        requests.first?.date ?? ""
+    }
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            HStack(spacing: 12) {
+                // Company Logo
+                RoundedRectangle(cornerRadius: 12)
+                    .fill(AppTheme.latteBrown)
+                    .frame(width: 60, height: 60)
+                    .overlay(
+                        Image(systemName: "building.2.fill")
+                            .font(.system(size: 24))
+                            .foregroundColor(AppTheme.coffeeBrown)
+                    )
+                
+                VStack(alignment: .leading, spacing: 6) {
+                    Text(company)
+                        .font(.system(size: 20, weight: .bold))
+                        .coffeePrimaryText()
+                    
+                    Text("\(requests.count) request\(requests.count == 1 ? "" : "s")")
+                        .font(.system(size: 14))
+                        .foregroundColor(AppTheme.textSecondary)
+                    
+                    Text("Most recent: \(mostRecentDate)")
+                        .font(.system(size: 12))
+                        .foregroundColor(AppTheme.textSecondary)
+                }
+                
+                Spacer()
+                
+                Image(systemName: "chevron.right")
+                    .foregroundColor(AppTheme.textSecondary)
+            }
+            
+            // Status breakdown
+            HStack(spacing: 8) {
+                if statusCounts.pending > 0 {
+                    StatusBadge(
+                        count: statusCounts.pending,
+                        label: "Pending",
+                        color: Color.orange
+                    )
+                }
+                
+                if statusCounts.interested > 0 {
+                    StatusBadge(
+                        count: statusCounts.interested,
+                        label: "Interested",
+                        color: Color.purple
+                    )
+                }
+                
+                if statusCounts.accepted > 0 {
+                    StatusBadge(
+                        count: statusCounts.accepted,
+                        label: "Accepted",
+                        color: Color.green
+                    )
+                }
+            }
+        }
+        .padding(16)
+        .background(AppTheme.creamWhite)
+        .cornerRadius(16)
+        .shadow(color: AppTheme.shadow, radius: 4, x: 0, y: 2)
+    }
+}
+
+// MARK: - Status Badge
+
+struct StatusBadge: View {
+    let count: Int
+    let label: String
+    let color: Color
+    
+    var body: some View {
+        HStack(spacing: 4) {
+            Text("\(count)")
+                .font(.system(size: 12, weight: .bold))
+            Text(label)
+                .font(.system(size: 12, weight: .medium))
+        }
+        .foregroundColor(.white)
+        .padding(.horizontal, 10)
+        .padding(.vertical, 6)
+        .background(color)
+        .cornerRadius(8)
     }
 }
 
@@ -279,6 +376,32 @@ struct RequestItemCard: View {
         .background(AppTheme.creamWhite)
         .cornerRadius(16)
         .shadow(color: AppTheme.shadow, radius: 4, x: 0, y: 2)
+    }
+}
+
+// MARK: - Filter Chip
+
+struct FilterChip: View {
+    let title: String
+    let isSelected: Bool
+    let action: () -> Void
+    
+    var body: some View {
+        Button(action: action) {
+            Text(title)
+                .font(.system(size: 14, weight: isSelected ? .semibold : .medium))
+                .foregroundColor(isSelected ? AppTheme.creamWhite : AppTheme.coffeeBrown)
+                .padding(.horizontal, 16)
+                .padding(.vertical, 8)
+                .background(
+                    RoundedRectangle(cornerRadius: 20)
+                        .fill(isSelected ? AppTheme.coffeeBrown : AppTheme.creamWhite)
+                )
+                .overlay(
+                    RoundedRectangle(cornerRadius: 20)
+                        .stroke(AppTheme.coffeeBrown, lineWidth: isSelected ? 0 : 1)
+                )
+        }
     }
 }
 

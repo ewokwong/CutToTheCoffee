@@ -10,16 +10,8 @@ import SwiftUI
 struct ExploreView: View {
     @ObservedObject var authManager = AuthenticationManager.shared
     @State private var searchText = ""
-    @State private var selectedFilter: ExploreFilter = .all
     @State private var selectedCompany: String? = nil
-    @State private var selectedRole: String? = nil
     @State private var selectedReferrer: (name: String, company: String, role: String, university: String)? = nil
-    
-    enum ExploreFilter: String, CaseIterable {
-        case all = "All"
-        case referrers = "Referrers"
-        case companies = "Companies"
-    }
     
     var body: some View {
         NavigationView {
@@ -64,102 +56,59 @@ struct ExploreView: View {
                         insertion: .move(edge: .trailing),
                         removal: .move(edge: .trailing)
                     ))
-                } else if let roleName = selectedRole {
-                    // Role Detail View
-                    RoleDetailView(
-                        roleName: roleName,
-                        onBack: { 
-                            withAnimation(.easeInOut(duration: 0.3)) {
-                                selectedRole = nil
-                            }
-                        },
-                        onReferrerSelect: { name, company, role, university in
-                            withAnimation(.easeInOut(duration: 0.3)) {
-                                selectedReferrer = (name, company, role, university)
-                            }
-                        }
-                    )
-                    .transition(.asymmetric(
-                        insertion: .move(edge: .trailing),
-                        removal: .move(edge: .trailing)
-                    ))
                 } else {
                     // Main Explore View
                     VStack(spacing: 0) {
-                        // Search Bar and Filter Chips
-                        VStack(spacing: 16) {
-                            // Search Bar
-                            HStack {
-                                Image(systemName: "magnifyingglass")
-                                    .foregroundColor(AppTheme.textSecondary)
-                                
-                                TextField("Search by company or role", text: $searchText)
-                                    .font(.system(size: 16))
-                            }
-                            .padding(12)
-                            .background(AppTheme.creamWhite)
-                            .cornerRadius(12)
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 12)
-                                    .stroke(AppTheme.latteBrown, lineWidth: 1)
-                            )
-                            .padding(.horizontal, 20)
-                            .padding(.top, 16)
-
+                        // Header
+                        HStack {
+                            Text("Explore Companies")
+                                .font(.system(size: 28, weight: .bold))
+                                .coffeePrimaryText()
+                            
+                            Spacer()
                         }
+                        .padding(.horizontal, 20)
+                        .padding(.top, 16)
+                        .padding(.bottom, 12)
+                        
+                        // Search Bar
+                        HStack {
+                            Image(systemName: "magnifyingglass")
+                                .foregroundColor(AppTheme.textSecondary)
+                            
+                            TextField("Search companies", text: $searchText)
+                                .font(.system(size: 16))
+                        }
+                        .padding(12)
+                        .background(AppTheme.creamWhite)
+                        .cornerRadius(12)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 12)
+                                .stroke(AppTheme.latteBrown, lineWidth: 1)
+                        )
+                        .padding(.horizontal, 20)
                         .padding(.bottom, 16)
                         
-                        // Content
+                        // Content - Vertical Grid of Companies
                         ScrollView {
-                            VStack(spacing: 16) {
-                            if selectedFilter == .all || selectedFilter == .companies {
-                                // Explore by Company Section
-                                SectionHeader(title: "Explore by Company", icon: "building.2.fill")
-                                    .padding(.horizontal, 20)
-                                    
-                                    ScrollView(.horizontal, showsIndicators: false) {
-                                        HStack(spacing: 16) {
-                                            ForEach(0..<5) { index in
-                                                CompanyCard(
-                                                    companyName: "Company \(index + 1)",
-                                                    role: "Software Engineer",
-                                                    referrersCount: Int.random(in: 3...15)
-                                                )
-                                                .onTapGesture {
-                                                    withAnimation(.easeInOut(duration: 0.3)) {
-                                                        selectedCompany = "Company \(index + 1)"
-                                                    }
-                                                }
-                                            }
+                            LazyVGrid(columns: [
+                                GridItem(.flexible(), spacing: 16),
+                                GridItem(.flexible(), spacing: 16)
+                            ], spacing: 16) {
+                                ForEach(0..<20) { index in
+                                    CompanyCard(
+                                        companyName: "Company \(index + 1)",
+                                        role: "Software Engineer",
+                                        referrersCount: Int.random(in: 3...15)
+                                    )
+                                    .onTapGesture {
+                                        withAnimation(.easeInOut(duration: 0.3)) {
+                                            selectedCompany = "Company \(index + 1)"
                                         }
-                                        .padding(.horizontal, 20)
-                                    }
-                                }
-                                
-                            if selectedFilter == .all || selectedFilter == .referrers {
-                                // Explore by Role Section
-                                SectionHeader(title: "Explore by Role", icon: "person.2.fill")
-                                    .padding(.horizontal, 20)
-                                    .padding(.top, 8)
-                                    
-                                    ScrollView(.horizontal, showsIndicators: false) {
-                                        HStack(spacing: 16) {
-                                            ForEach(["Software Engineer", "Product Manager", "Consultant", "Data Scientist", "UX Designer"], id: \.self) { role in
-                                                RoleCard(
-                                                    roleName: role,
-                                                    referrersCount: Int.random(in: 5...20)
-                                                )
-                                                .onTapGesture {
-                                                    withAnimation(.easeInOut(duration: 0.3)) {
-                                                        selectedRole = role
-                                                    }
-                                                }
-                                            }
-                                        }
-                                        .padding(.horizontal, 20)
                                     }
                                 }
                             }
+                            .padding(.horizontal, 20)
                             .padding(.bottom, 100) // Space for bottom nav bar
                         }
                     }
@@ -174,52 +123,6 @@ struct ExploreView: View {
     }
 }
 
-// MARK: - Section Header
-
-struct SectionHeader: View {
-    let title: String
-    let icon: String
-    
-    var body: some View {
-        HStack {
-            Image(systemName: icon)
-                .foregroundColor(AppTheme.coffeeBrown)
-            
-            Text(title)
-                .font(.system(size: 20, weight: .semibold))
-                .coffeePrimaryText()
-            
-            Spacer()
-        }
-    }
-}
-
-// MARK: - Filter Chip
-
-struct FilterChip: View {
-    let title: String
-    let isSelected: Bool
-    let action: () -> Void
-    
-    var body: some View {
-        Button(action: action) {
-            Text(title)
-                .font(.system(size: 14, weight: isSelected ? .semibold : .medium))
-                .foregroundColor(isSelected ? AppTheme.creamWhite : AppTheme.coffeeBrown)
-                .padding(.horizontal, 16)
-                .padding(.vertical, 8)
-                .background(
-                    RoundedRectangle(cornerRadius: 20)
-                        .fill(isSelected ? AppTheme.coffeeBrown : AppTheme.creamWhite)
-                )
-                .overlay(
-                    RoundedRectangle(cornerRadius: 20)
-                        .stroke(AppTheme.coffeeBrown, lineWidth: isSelected ? 0 : 1)
-                )
-        }
-    }
-}
-
 // MARK: - Company Card
 
 struct CompanyCard: View {
@@ -228,7 +131,7 @@ struct CompanyCard: View {
     let referrersCount: Int
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
+        VStack(alignment: .center, spacing: 12) {
             // Company Logo Placeholder
             RoundedRectangle(cornerRadius: 12)
                 .fill(AppTheme.latteBrown)
@@ -239,69 +142,25 @@ struct CompanyCard: View {
                         .foregroundColor(AppTheme.coffeeBrown)
                 )
             
-            VStack(alignment: .leading, spacing: 4) {
+            VStack(alignment: .center, spacing: 4) {
                 Text(companyName)
-                    .font(.system(size: 16, weight: .semibold))
-                    .coffeePrimaryText()
-                
-                Text(role)
-                    .font(.system(size: 14))
-                    .foregroundColor(AppTheme.textSecondary)
-                    .lineLimit(1)
-                
-                HStack(spacing: 4) {
-                    Image(systemName: "person.2")
-                        .font(.system(size: 12))
-                    Text("\(referrersCount) referrers")
-                        .font(.system(size: 12))
-                }
-                .foregroundColor(AppTheme.textSecondary)
-            }
-        }
-        .frame(width: 160)
-        .padding(16)
-        .background(AppTheme.creamWhite)
-        .cornerRadius(16)
-        .shadow(color: AppTheme.shadow, radius: 4, x: 0, y: 2)
-    }
-}
-
-// MARK: - Role Card
-
-struct RoleCard: View {
-    let roleName: String
-    let referrersCount: Int
-    
-    var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            // Role Icon Placeholder
-            RoundedRectangle(cornerRadius: 12)
-                .fill(AppTheme.latteBrown)
-                .frame(width: 60, height: 60)
-                .overlay(
-                    Image(systemName: "briefcase.fill")
-                        .font(.system(size: 28))
-                        .foregroundColor(AppTheme.coffeeBrown)
-                )
-            
-            VStack(alignment: .leading, spacing: 4) {
-                Text(roleName)
-                    .font(.system(size: 16, weight: .semibold))
+                    .font(.system(size: 15, weight: .semibold))
                     .coffeePrimaryText()
                     .lineLimit(2)
-                    .multilineTextAlignment(.leading)
+                    .multilineTextAlignment(.center)
                 
                 HStack(spacing: 4) {
                     Image(systemName: "person.2")
-                        .font(.system(size: 12))
+                        .font(.system(size: 11))
                     Text("\(referrersCount) referrers")
-                        .font(.system(size: 12))
+                        .font(.system(size: 11))
                 }
                 .foregroundColor(AppTheme.textSecondary)
             }
         }
-        .frame(width: 160)
-        .padding(16)
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, 20)
+        .padding(.horizontal, 12)
         .background(AppTheme.creamWhite)
         .cornerRadius(16)
         .shadow(color: AppTheme.shadow, radius: 4, x: 0, y: 2)
@@ -362,153 +221,15 @@ struct ReferrerCard: View {
     }
 }
 
-// MARK: - Role Detail View
-
-struct RoleDetailView: View {
-    let roleName: String
-    let onBack: () -> Void
-    let onReferrerSelect: (String, String, String, String) -> Void
-    @State private var searchText = ""
-    
-    // Sample companies for referrers with this role
-    let companies = [
-        "Google", "Microsoft", "Amazon", "Meta", "Apple",
-        "Netflix", "Tesla", "Uber", "Airbnb", "Stripe"
-    ]
-    
-    var filteredReferrers: [(String, String)] {
-        let allReferrers = companies.enumerated().map { (index, company) in
-            ("Referrer \(index + 1)", company)
-        }
-        
-        if searchText.isEmpty {
-            return allReferrers
-        } else {
-            return allReferrers.filter { $0.1.localizedCaseInsensitiveContains(searchText) }
-        }
-    }
-    
-    var body: some View {
-        VStack(spacing: 0) {
-            // Header with Back Button
-            HStack {
-                Button(action: onBack) {
-                    Image(systemName: "chevron.left")
-                        .font(.system(size: 20, weight: .semibold))
-                        .foregroundColor(AppTheme.coffeeBrown)
-                }
-                
-                Spacer()
-            }
-            .padding(.horizontal, 20)
-            .padding(.top, 16)
-            .padding(.bottom, 20)
-            
-            // Title
-            HStack {
-                Text("Referrers for \(roleName)")
-                    .font(.system(size: 24, weight: .bold))
-                    .coffeePrimaryText()
-                
-                Spacer()
-            }
-            .padding(.horizontal, 20)
-            .padding(.bottom, 16)
-            
-            // Search Bar
-            HStack {
-                Image(systemName: "magnifyingglass")
-                    .foregroundColor(AppTheme.textSecondary)
-                
-                TextField("Filter by company...", text: $searchText)
-                    .font(.system(size: 16))
-                
-                if !searchText.isEmpty {
-                    Button(action: {
-                        searchText = ""
-                    }) {
-                        Image(systemName: "xmark.circle.fill")
-                            .foregroundColor(AppTheme.textSecondary)
-                    }
-                }
-            }
-            .padding(12)
-            .background(AppTheme.creamWhite)
-            .cornerRadius(12)
-            .overlay(
-                RoundedRectangle(cornerRadius: 12)
-                    .stroke(AppTheme.latteBrown, lineWidth: 1)
-            )
-            .padding(.horizontal, 20)
-            .padding(.bottom, 20)
-            
-            // Referrer List
-            ScrollView {
-                VStack(spacing: 12) {
-                    ForEach(Array(filteredReferrers.enumerated()), id: \.offset) { index, referrer in
-                        ReferrerCard(
-                            name: referrer.0,
-                            company: referrer.1,
-                            role: roleName,
-                            university: "University \(index + 1)"
-                        )
-                        .onTapGesture {
-                            onReferrerSelect(referrer.0, referrer.1, roleName, "University \(index + 1)")
-                        }
-                    }
-                    
-                    if filteredReferrers.isEmpty {
-                        VStack(spacing: 12) {
-                            Image(systemName: "magnifyingglass")
-                                .font(.system(size: 48))
-                                .foregroundColor(AppTheme.textSecondary)
-                                .padding(.top, 40)
-                            
-                            Text("No referrers found")
-                                .font(.system(size: 18, weight: .semibold))
-                                .foregroundColor(AppTheme.textSecondary)
-                            
-                            Text("Try adjusting your search")
-                                .font(.system(size: 14))
-                                .foregroundColor(AppTheme.textSecondary)
-                        }
-                        .padding(.top, 20)
-                    }
-                }
-                .padding(.horizontal, 20)
-                .padding(.bottom, 100)
-            }
-        }
-    }
-}
-
 // MARK: - Company Detail View
 
 struct CompanyDetailView: View {
     let companyName: String
     let onBack: () -> Void
     let onReferrerSelect: (String, String, String, String) -> Void
-    @State private var searchText = ""
-    
-    // Sample roles for filtering
-    let referrers = [
-        ("Referrer 1", "Software Engineer"),
-        ("Referrer 2", "Product Manager"),
-        ("Referrer 3", "Software Engineer"),
-        ("Referrer 4", "Data Scientist"),
-        ("Referrer 5", "Senior Software Engineer"),
-        ("Referrer 6", "Product Manager"),
-        ("Referrer 7", "Data Analyst"),
-        ("Referrer 8", "Software Engineer")
-    ]
-    
-    var filteredReferrers: [(String, String)] {
-        if searchText.isEmpty {
-            return referrers
-        } else {
-            return referrers.filter { $0.1.localizedCaseInsensitiveContains(searchText) }
-        }
-    }
+    @State private var showRequestSent = false
+    @State private var showRoleLinkInput = false
+    @State private var roleLink = ""
     
     var body: some View {
         VStack(spacing: 0) {
@@ -526,80 +247,218 @@ struct CompanyDetailView: View {
             .padding(.top, 16)
             .padding(.bottom, 20)
             
-            // Title
-            HStack {
-                Text("Referrers from \(companyName)")
-                    .font(.system(size: 24, weight: .bold))
-                    .coffeePrimaryText()
-                
-                Spacer()
-            }
-            .padding(.horizontal, 20)
-            .padding(.bottom, 16)
-            
-            // Search Bar
-            HStack {
-                Image(systemName: "magnifyingglass")
-                    .foregroundColor(AppTheme.textSecondary)
-                
-                TextField("Filter by role...", text: $searchText)
-                    .font(.system(size: 16))
-                
-                if !searchText.isEmpty {
-                    Button(action: {
-                        searchText = ""
-                    }) {
-                        Image(systemName: "xmark.circle.fill")
-                            .foregroundColor(AppTheme.textSecondary)
-                    }
-                }
-            }
-            .padding(12)
-            .background(AppTheme.creamWhite)
-            .cornerRadius(12)
-            .overlay(
-                RoundedRectangle(cornerRadius: 12)
-                    .stroke(AppTheme.latteBrown, lineWidth: 1)
-            )
-            .padding(.horizontal, 20)
-            .padding(.bottom, 20)
-            
-            // Referrer List
             ScrollView {
-                VStack(spacing: 12) {
-                    ForEach(Array(filteredReferrers.enumerated()), id: \.offset) { index, referrer in
-                        ReferrerCard(
-                            name: referrer.0,
-                            company: companyName,
-                            role: referrer.1,
-                            university: "University \(index + 1)"
-                        )
-                        .onTapGesture {
-                            onReferrerSelect(referrer.0, companyName, referrer.1, "University \(index + 1)")
-                        }
+                VStack(spacing: 24) {
+                    // Company Logo and Name
+                    VStack(spacing: 16) {
+                        RoundedRectangle(cornerRadius: 20)
+                            .fill(AppTheme.latteBrown)
+                            .frame(width: 120, height: 120)
+                            .overlay(
+                                Image(systemName: "building.2.fill")
+                                    .font(.system(size: 56))
+                                    .foregroundColor(AppTheme.coffeeBrown)
+                            )
+                        
+                        Text(companyName)
+                            .font(.system(size: 32, weight: .bold))
+                            .coffeePrimaryText()
+                            .multilineTextAlignment(.center)
                     }
+                    .padding(.top, 20)
                     
-                    if filteredReferrers.isEmpty {
+                    // Company Info Card
+                    VStack(alignment: .leading, spacing: 16) {
+                        Text("Explore Our Network")
+                            .font(.system(size: 20, weight: .semibold))
+                            .coffeePrimaryText()
+                        
                         VStack(spacing: 12) {
-                            Image(systemName: "magnifyingglass")
-                                .font(.system(size: 48))
-                                .foregroundColor(AppTheme.textSecondary)
-                                .padding(.top, 40)
+                            CompanyInfoRow(
+                                icon: "person.2.fill",
+                                title: "Referrers Available",
+                                value: "\(Int.random(in: 5...25))"
+                            )
                             
-                            Text("No referrers found")
-                                .font(.system(size: 18, weight: .semibold))
-                                .foregroundColor(AppTheme.textSecondary)
+                            CompanyInfoRow(
+                                icon: "briefcase.fill",
+                                title: "Open Roles",
+                                value: "\(Int.random(in: 10...50))+"
+                            )
                             
-                            Text("Try adjusting your search")
-                                .font(.system(size: 14))
-                                .foregroundColor(AppTheme.textSecondary)
+                            CompanyInfoRow(
+                                icon: "checkmark.circle.fill",
+                                title: "Success Rate",
+                                value: "\(Int.random(in: 70...95))%"
+                            )
                         }
-                        .padding(.top, 20)
                     }
+                    .padding(20)
+                    .background(AppTheme.creamWhite)
+                    .cornerRadius(16)
+                    .shadow(color: AppTheme.shadow, radius: 4, x: 0, y: 2)
+                    
+                    // Description
+                    VStack(alignment: .leading, spacing: 12) {
+                        Text("About \(companyName)")
+                            .font(.system(size: 20, weight: .semibold))
+                            .coffeePrimaryText()
+                        
+                        Text("Connect with referrers from \(companyName) who can help you navigate the application process and increase your chances of landing your dream role.")
+                            .font(.system(size: 16))
+                            .foregroundColor(AppTheme.textSecondary)
+                            .lineSpacing(4)
+                    }
+                    .padding(20)
+                    .background(AppTheme.creamWhite)
+                    .cornerRadius(16)
+                    .shadow(color: AppTheme.shadow, radius: 4, x: 0, y: 2)
+                    
+                    // Apply for Referral Section
+                    VStack(spacing: 16) {
+                        if showRoleLinkInput {
+                            // Role Link Input Field
+                            VStack(alignment: .leading, spacing: 8) {
+                                Text("Role Link")
+                                    .font(.system(size: 14, weight: .semibold))
+                                    .foregroundColor(AppTheme.coffeeBrown)
+                                
+                                HStack {
+                                    Image(systemName: "link")
+                                        .foregroundColor(AppTheme.textSecondary)
+                                    
+                                    TextField("Paste job posting URL here", text: $roleLink)
+                                        .font(.system(size: 16))
+                                        .autocapitalization(.none)
+                                        .keyboardType(.URL)
+                                }
+                                .padding(12)
+                                .background(AppTheme.creamWhite)
+                                .cornerRadius(12)
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 12)
+                                        .stroke(AppTheme.latteBrown, lineWidth: 1)
+                                )
+                            }
+                            
+                            // Submit Button
+                            Button(action: {
+                                withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+                                    showRoleLinkInput = false
+                                    showRequestSent = true
+                                    roleLink = ""
+                                }
+                                
+                                DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+                                    withAnimation {
+                                        showRequestSent = false
+                                    }
+                                }
+                            }) {
+                                HStack(spacing: 8) {
+                                    Image(systemName: "paperplane.fill")
+                                        .font(.system(size: 18))
+                                    
+                                    Text("Submit Request")
+                                        .font(.system(size: 18, weight: .semibold))
+                                }
+                                .foregroundColor(AppTheme.creamWhite)
+                                .frame(maxWidth: .infinity)
+                                .padding(.vertical, 16)
+                                .background(roleLink.isEmpty ? AppTheme.textSecondary : AppTheme.coffeeBrown)
+                                .cornerRadius(12)
+                            }
+                            .disabled(roleLink.isEmpty)
+                            
+                            // Cancel button
+                            Button(action: {
+                                withAnimation(.easeInOut(duration: 0.3)) {
+                                    showRoleLinkInput = false
+                                    roleLink = ""
+                                }
+                            }) {
+                                Text("Cancel")
+                                    .font(.system(size: 16, weight: .medium))
+                                    .foregroundColor(AppTheme.coffeeBrown)
+                                    .frame(maxWidth: .infinity)
+                                    .padding(.vertical, 12)
+                            }
+                        } else {
+                            // Apply for Referral Button
+                            Button(action: {
+                                withAnimation(.easeInOut(duration: 0.3)) {
+                                    showRoleLinkInput = true
+                                }
+                            }) {
+                                HStack(spacing: 8) {
+                                    Image(systemName: "paperplane.fill")
+                                        .font(.system(size: 18))
+                                    
+                                    Text("Apply for Referral")
+                                        .font(.system(size: 18, weight: .semibold))
+                                }
+                                .foregroundColor(AppTheme.creamWhite)
+                                .frame(maxWidth: .infinity)
+                                .padding(.vertical, 16)
+                                .background(AppTheme.coffeeBrown)
+                                .cornerRadius(12)
+                            }
+                        }
+                    }
+                    .padding(.horizontal, 20)
                 }
                 .padding(.horizontal, 20)
-                .padding(.bottom, 100)
+                .padding(.bottom, 120)
             }
+        }
+        .overlay(
+            Group {
+                if showRequestSent {
+                    VStack {
+                        HStack(spacing: 12) {
+                            Image(systemName: "checkmark.circle.fill")
+                                .font(.system(size: 24))
+                                .foregroundColor(.green)
+                            
+                            Text("Request sent successfully!")
+                                .font(.system(size: 16, weight: .semibold))
+                                .foregroundColor(AppTheme.coffeeBrown)
+                        }
+                        .padding(20)
+                        .background(AppTheme.creamWhite)
+                        .cornerRadius(16)
+                        .shadow(color: AppTheme.shadow, radius: 8, x: 0, y: 4)
+                    }
+                    .transition(.scale.combined(with: .opacity))
+                }
+            }
+        )
+    }
+}
+
+// MARK: - Company Info Row
+
+struct CompanyInfoRow: View {
+    let icon: String
+    let title: String
+    let value: String
+    
+    var body: some View {
+        HStack(spacing: 12) {
+            Image(systemName: icon)
+                .font(.system(size: 20))
+                .foregroundColor(AppTheme.coffeeBrown)
+                .frame(width: 24)
+            
+            Text(title)
+                .font(.system(size: 16))
+                .foregroundColor(AppTheme.textSecondary)
+            
+            Spacer()
+            
+            Text(value)
+                .font(.system(size: 16, weight: .semibold))
+                .coffeePrimaryText()
         }
     }
 }

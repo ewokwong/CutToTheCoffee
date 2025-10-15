@@ -1,6 +1,6 @@
 //
 //  Config.template.swift
-//  Cut to the Coffee
+//  Cut the Coffee
 //
 //  Template for API keys and configuration
 //  Copy this file to Config.swift and add your actual values

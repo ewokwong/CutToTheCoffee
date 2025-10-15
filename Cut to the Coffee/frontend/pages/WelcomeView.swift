@@ -14,6 +14,7 @@ struct WelcomeView: View {
     @State private var opacity: Double = 0
     @State private var showReferrerCodeEntry = false
     @State private var showReferrerHome = false
+    @State private var showCompaniesExplorer = false
     
     var body: some View {
         ZStack {
@@ -24,6 +25,19 @@ struct WelcomeView: View {
                         insertion: .move(edge: .trailing),
                         removal: .move(edge: .trailing)
                     ))
+            } else if showCompaniesExplorer {
+                // Show companies explorer
+                CompaniesExplorerView(
+                    onBack: {
+                        withAnimation(.easeInOut(duration: 0.3)) {
+                            showCompaniesExplorer = false
+                        }
+                    }
+                )
+                .transition(.asymmetric(
+                    insertion: .move(edge: .trailing),
+                    removal: .move(edge: .trailing)
+                ))
             } else if showReferrerCodeEntry {
                 // Show code entry screen
                 ReferrerCodeEntryView(
@@ -182,10 +196,11 @@ struct WelcomeView: View {
                         
                         // Explore network button
                         Button {
-                            // Continue as guest
-                            authManager.continueAsGuest()
+                            withAnimation(.easeInOut(duration: 0.3)) {
+                                showCompaniesExplorer = true
+                            }
                         } label: {
-                            Text("Explore Our Network")
+                            Text("Explore Our Network of Companies")
                                 .font(.system(size: 16, weight: .semibold))
                                 .foregroundColor(AppTheme.coffeeBrown)
                                 .frame(maxWidth: .infinity)

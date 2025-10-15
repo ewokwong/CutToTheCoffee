@@ -19,16 +19,16 @@ struct Request: Identifiable, Codable {
 // MARK: - Request Status
 enum RequestStatus: String, Codable, CaseIterable {
     case pending = "pending"
+    case interested = "interested"
     case accepted = "accepted"
     case rejected = "rejected"
-    case read = "read"
     
     var displayName: String {
         switch self {
         case .pending: return "Pending"
+        case .interested: return "Interested"
         case .accepted: return "Accepted"
         case .rejected: return "Rejected"
-        case .read: return "Read"
         }
     }
 }
@@ -41,8 +41,8 @@ extension RequestStatus {
     var color: Color {
         switch self {
         case .pending: return Color.orange
-        case .accepted: return Color.blue
-        case .read: return Color.gray
+        case .interested: return Color.purple
+        case .accepted: return Color.green
         case .rejected: return Color.red
         }
     }
@@ -51,8 +51,8 @@ extension RequestStatus {
     var icon: String {
         switch self {
         case .pending: return "clock.fill"
+        case .interested: return "eye.fill"
         case .accepted: return "checkmark.circle.fill"
-        case .read: return "face.frowning.fill"
         case .rejected: return "xmark.circle.fill"
         }
     }
