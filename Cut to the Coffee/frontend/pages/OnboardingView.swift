@@ -19,6 +19,13 @@ struct OnboardingView: View {
     @State private var bio: String = ""
     @State private var hasUploadedResume: Bool = false
     @State private var resumeFileName: String = ""
+    @State private var resumeFileURL: URL?
+    @State private var name: String = ""
+    @State private var email: String = ""
+    
+    // Resume parsing state
+    @State private var isParsingResume: Bool = false
+    @State private var parsedResumeData: ResumeParsingService.ParsedResumeData?
     
     // UI state
     @State private var showingDocumentPicker = false
@@ -226,81 +233,196 @@ struct OnboardingView: View {
     // MARK: - Step Views
     
     private var academicInfoStep: some View {
-        VStack(spacing: 16) {
-            VStack(alignment: .leading, spacing: 8) {
-                Text("Degree Program")
-                    .font(.system(size: 14, weight: .semibold))
-                    .foregroundColor(AppTheme.textSecondary)
-                
-                TextField("e.g., Computer Science", text: $degree)
-                    .textFieldStyle(.coffeeStyle)
-            }
-            
-            VStack(alignment: .leading, spacing: 8) {
-                Text("Graduation Year")
-                    .font(.system(size: 14, weight: .semibold))
-                    .foregroundColor(AppTheme.textSecondary)
-                
-                TextField("e.g., 2025", text: $yearGraduating)
-                    .textFieldStyle(.coffeeStyle)
-                    .keyboardType(.numberPad)
-            }
-        }
-        .padding(20)
-        .coffeeCardStyle()
-    }
-    
-    private var resumeUploadStep: some View {
         VStack(spacing: 20) {
+            // PDF Upload Section
             VStack(spacing: 16) {
-                if hasUploadedResume {
+                if isParsingResume {
+                    // Parsing state
+                    VStack(spacing: 12) {
+                        ProgressView()
+                            .scaleEffect(1.5)
+                            .tint(AppTheme.coffeeBrown)
+                        
+                        Text("Analyzing your resume...")
+                            .font(.system(size: 16, weight: .semibold))
+                            .coffeePrimaryText()
+                        
+                        Text("This may take a few moments")
+                            .font(.system(size: 14))
+                            .foregroundColor(AppTheme.textSecondary)
+                    }
+                    .padding(40)
+                    .coffeeCardStyle()
+                } else if hasUploadedResume {
                     // Resume uploaded state
                     VStack(spacing: 12) {
                         Image(systemName: "doc.fill.badge.checkmark")
-                            .font(.system(size: 50))
+                            .font(.system(size: 40))
                             .foregroundColor(AppTheme.coffeeBrown)
                         
                         Text("Resume Uploaded")
-                            .font(.system(size: 18, weight: .semibold))
+                            .font(.system(size: 16, weight: .semibold))
                             .coffeePrimaryText()
                         
                         Text(resumeFileName)
                             .font(.system(size: 14))
                             .foregroundColor(AppTheme.textSecondary)
                         
-                        Button("Change Resume") {
+                        Button("Upload Different Resume") {
                             showingDocumentPicker = true
                         }
                         .buttonStyle(.coffeeSecondary)
                         .padding(.top, 8)
                     }
+                    .padding(30)
+                    .coffeeCardStyle()
                 } else {
                     // No resume uploaded state
                     VStack(spacing: 12) {
                         Image(systemName: "doc.badge.arrow.up")
-                            .font(.system(size: 50))
-                            .foregroundColor(AppTheme.textSecondary)
+                            .font(.system(size: 40))
+                            .foregroundColor(AppTheme.coffeeBrown)
                         
                         Text("Upload Your Resume")
-                            .font(.system(size: 18, weight: .semibold))
+                            .font(.system(size: 16, weight: .semibold))
                             .coffeePrimaryText()
                         
-                        Text("We'll use this to help referrers learn about your background")
+                        Text("We'll automatically fill in your information")
                             .font(.system(size: 14))
                             .foregroundColor(AppTheme.textSecondary)
                             .multilineTextAlignment(.center)
-                            .padding(.horizontal, 20)
                         
-                        Button("Choose File") {
+                        Button("Choose PDF") {
                             showingDocumentPicker = true
                         }
                         .buttonStyle(.coffeePrimary)
                         .padding(.top, 8)
                     }
+                    .padding(30)
+                    .coffeeCardStyle()
                 }
             }
-            .padding(40)
-            .coffeeCardStyle()
+            
+            // Show form fields after upload or allow manual entry
+            if hasUploadedResume || !degree.isEmpty || !yearGraduating.isEmpty {
+                VStack(spacing: 16) {
+                    Text("Review & Edit Your Information")
+                        .font(.system(size: 14, weight: .semibold))
+                        .foregroundColor(AppTheme.textSecondary)
+                    
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("Degree Program")
+                            .font(.system(size: 14, weight: .semibold))
+                            .foregroundColor(AppTheme.textSecondary)
+                        
+                        TextField("e.g., Computer Science", text: $degree)
+                            .textFieldStyle(.coffeeStyle)
+                    }
+                    
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("Graduation Year")
+                            .font(.system(size: 14, weight: .semibold))
+                            .foregroundColor(AppTheme.textSecondary)
+                        
+                        TextField("e.g., 2025", text: $yearGraduating)
+                            .textFieldStyle(.coffeeStyle)
+                            .keyboardType(.numberPad)
+                    }
+                }
+                .padding(20)
+                .coffeeCardStyle()
+            }
+            
+            // Option to skip resume upload
+            if !hasUploadedResume && degree.isEmpty && yearGraduating.isEmpty {
+                Button("Skip - Enter Manually") {
+                    // Just set a flag to show the form fields
+                    degree = ""
+                    yearGraduating = ""
+                }
+                .font(.system(size: 14, weight: .medium))
+                .foregroundColor(AppTheme.textSecondary)
+            }
+        }
+    }
+    
+    private var resumeUploadStep: some View {
+        VStack(spacing: 20) {
+            // Summary of extracted information
+            if hasUploadedResume, let parsedData = parsedResumeData {
+                VStack(spacing: 16) {
+                    HStack {
+                        Image(systemName: "checkmark.circle.fill")
+                            .foregroundColor(.green)
+                            .font(.system(size: 24))
+                        
+                        Text("Information Extracted")
+                            .font(.system(size: 18, weight: .semibold))
+                            .coffeePrimaryText()
+                        
+                        Spacer()
+                    }
+                    
+                    // Show extracted data summary
+                    VStack(alignment: .leading, spacing: 12) {
+                        if let name = parsedData.name {
+                            InfoLabelValueRow(label: "Name", value: name)
+                        }
+                        
+                        if let email = parsedData.email {
+                            InfoLabelValueRow(label: "Email", value: email)
+                        }
+                        
+                        if let degree = parsedData.degree {
+                            InfoLabelValueRow(label: "Degree", value: degree)
+                        }
+                        
+                        if let year = parsedData.graduationYear {
+                            InfoLabelValueRow(label: "Graduation Year", value: String(year))
+                        }
+                        
+                        if let skills = parsedData.skills, !skills.isEmpty {
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text("Skills")
+                                    .font(.system(size: 12, weight: .semibold))
+                                    .foregroundColor(AppTheme.textSecondary)
+                                
+                                FlowLayout(spacing: 8) {
+                                    ForEach(skills.prefix(8), id: \.self) { skill in
+                                        Text(skill)
+                                            .font(.system(size: 12))
+                                            .padding(.horizontal, 12)
+                                            .padding(.vertical, 6)
+                                            .background(AppTheme.latteBrown)
+                                            .foregroundColor(AppTheme.coffeeBrown)
+                                            .cornerRadius(12)
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                .padding(20)
+                .coffeeCardStyle()
+            } else {
+                VStack(spacing: 12) {
+                    Image(systemName: "info.circle")
+                        .font(.system(size: 40))
+                        .foregroundColor(AppTheme.coffeeBrown)
+                    
+                    Text("Review Your Information")
+                        .font(.system(size: 18, weight: .semibold))
+                        .coffeePrimaryText()
+                    
+                    Text("Your details have been extracted from your resume. You can make any changes in the previous or next steps.")
+                        .font(.system(size: 14))
+                        .foregroundColor(AppTheme.textSecondary)
+                        .multilineTextAlignment(.center)
+                        .padding(.horizontal, 20)
+                }
+                .padding(40)
+                .coffeeCardStyle()
+            }
         }
     }
     
@@ -342,9 +464,9 @@ struct OnboardingView: View {
     private var stepTitle: String {
         switch currentStep {
         case 0:
-            return "Academic Information"
+            return "Upload Your Resume"
         case 1:
-            return "Upload Resume"
+            return "Review Your Details"
         case 2:
             return "Complete Your Profile"
         default:
@@ -355,9 +477,9 @@ struct OnboardingView: View {
     private var stepDescription: String {
         switch currentStep {
         case 0:
-            return "Let's start with your academic background"
+            return "We'll automatically extract your information"
         case 1:
-            return "Help referrers understand your experience"
+            return "Confirm or update the details we found"
         case 2:
             return "Add your LinkedIn and a brief bio"
         default:
@@ -368,9 +490,12 @@ struct OnboardingView: View {
     private var canProceed: Bool {
         switch currentStep {
         case 0:
-            return !degree.isEmpty && !yearGraduating.isEmpty && Int(yearGraduating) != nil
+            // Can proceed if they have uploaded a resume OR filled in the fields manually
+            return (hasUploadedResume && !degree.isEmpty && !yearGraduating.isEmpty && Int(yearGraduating) != nil) ||
+                   (!hasUploadedResume && !degree.isEmpty && !yearGraduating.isEmpty && Int(yearGraduating) != nil)
         case 1:
-            return hasUploadedResume
+            // Step 1 is now for reviewing additional details
+            return true
         case 2:
             return !linkedinURL.isEmpty
         default:
@@ -434,13 +559,80 @@ struct OnboardingView: View {
     }
     
     private func handleDocumentPicked(_ url: URL) {
-        // In a real app, you would upload this to Firebase Storage
-        // For now, we'll just mark it as uploaded and store the filename
         resumeFileName = url.lastPathComponent
-        hasUploadedResume = true
+        resumeFileURL = url
         
-        // TODO: Implement actual file upload to Firebase Storage
         print("📄 Resume selected: \(resumeFileName)")
+        
+        // Start parsing the resume
+        Task {
+            await parseResume(url: url)
+        }
+    }
+    
+    /// Parse the uploaded resume and auto-fill form fields
+    private func parseResume(url: URL) async {
+        await MainActor.run {
+            isParsingResume = true
+        }
+        
+        do {
+            // Parse resume with LLM
+            let service = ResumeParsingService.shared
+            let parsedData = try await service.parseResume(from: url)
+            
+            await MainActor.run {
+                // Store parsed data
+                self.parsedResumeData = parsedData
+                
+                // Auto-fill form fields
+                if let degree = parsedData.degree {
+                    self.degree = degree
+                }
+                
+                if let year = parsedData.graduationYear {
+                    self.yearGraduating = String(year)
+                }
+                
+                if let linkedin = parsedData.linkedinURL {
+                    self.linkedinURL = linkedin
+                }
+                
+                if let bio = parsedData.bio {
+                    self.bio = bio
+                }
+                
+                if let name = parsedData.name {
+                    self.name = name
+                }
+                
+                if let email = parsedData.email {
+                    self.email = email
+                }
+                
+                // Mark as uploaded and stop parsing
+                self.hasUploadedResume = true
+                self.isParsingResume = false
+                
+                print("✅ Resume parsed and fields auto-filled:")
+                print("   Degree: \(self.degree)")
+                print("   Year: \(self.yearGraduating)")
+                print("   LinkedIn: \(self.linkedinURL)")
+                print("   Bio: \(self.bio)")
+            }
+        } catch {
+            await MainActor.run {
+                self.isParsingResume = false
+                self.hasUploadedResume = false
+                
+                // Show error to user
+                let errorMsg = (error as? ResumeParsingService.ResumeParsingError)?.errorDescription 
+                    ?? "Failed to parse resume. Please try again or enter information manually."
+                showError(message: errorMsg)
+                
+                print("❌ Error parsing resume: \(error.localizedDescription)")
+            }
+        }
     }
     
     private func completeOnboarding() {
@@ -464,11 +656,26 @@ struct OnboardingView: View {
         Task {
             do {
                 // Get user info from auth manager
-                guard let appleUserId = authManager.currentUserId,
-                      let name = authManager.userFullName,
-                      let email = authManager.userEmail else {
+                guard let appleUserId = authManager.currentUserId else {
                     showError(message: "Missing user information. Please sign in again.")
                     return
+                }
+                
+                // Use parsed name/email if available, otherwise fall back to auth manager
+                let studentName = !name.isEmpty ? name : (authManager.userFullName ?? "")
+                let studentEmail = !email.isEmpty ? email : (authManager.userEmail ?? "")
+                
+                guard !studentName.isEmpty, !studentEmail.isEmpty else {
+                    showError(message: "Missing name or email. Please sign in again.")
+                    return
+                }
+                
+                // Upload resume to Firebase Storage
+                var resumeDownloadURL: String? = nil
+                if let resumeFileURL = resumeFileURL {
+                    print("📤 Uploading resume to Firebase Storage...")
+                    let storageService = FirebaseStorageService.shared
+                    resumeDownloadURL = try await storageService.uploadResume(fileURL: resumeFileURL, userId: appleUserId)
                 }
                 
                 // TODO: Get actual university ID (for now using a placeholder)
@@ -477,12 +684,12 @@ struct OnboardingView: View {
                 
                 // Create student profile
                 let student = Student(
-                    name: name,
-                    email: email,
+                    name: studentName,
+                    email: studentEmail,
                     linkedinURL: linkedinURL,
                     universityID: placeholderUniversityId,
                     appleUserId: appleUserId,
-                    resumeURL: resumeFileName, // TODO: Replace with actual uploaded URL from Firebase Storage
+                    resumeURL: resumeDownloadURL,
                     degree: degree,
                     yearGraduating: graduationYear,
                     bio: bio.isEmpty ? nil : bio,
@@ -495,13 +702,15 @@ struct OnboardingView: View {
                 
                 print("✅ Student profile created in Firebase:")
                 print("   ID: \(student.id)")
-                print("   Name: \(name)")
-                print("   Email: \(email)")
+                print("   Name: \(studentName)")
+                print("   Email: \(studentEmail)")
                 print("   Degree: \(degree)")
                 print("   Graduation Year: \(graduationYear)")
                 print("   LinkedIn: \(linkedinURL)")
                 print("   Bio: \(bio)")
-                print("   Resume: \(resumeFileName)")
+                if let resumeURL = resumeDownloadURL {
+                    print("   Resume URL: \(resumeURL)")
+                }
                 
                 // Mark onboarding as complete
                 await MainActor.run {
@@ -568,6 +777,79 @@ struct DocumentPicker: UIViewControllerRepresentable {
         func documentPicker(_ controller: UIDocumentPickerViewController, didPickDocumentsAt urls: [URL]) {
             guard let url = urls.first else { return }
             onDocumentPicked(url)
+        }
+    }
+}
+
+// MARK: - Helper Views
+
+struct InfoLabelValueRow: View {
+    let label: String
+    let value: String
+    
+    var body: some View {
+        HStack(alignment: .top) {
+            Text(label)
+                .font(.system(size: 12, weight: .semibold))
+                .foregroundColor(AppTheme.textSecondary)
+                .frame(width: 100, alignment: .leading)
+            
+            Text(value)
+                .font(.system(size: 14))
+                .foregroundColor(AppTheme.coffeeBrown)
+            
+            Spacer()
+        }
+    }
+}
+
+struct FlowLayout: Layout {
+    var spacing: CGFloat = 8
+    
+    func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) -> CGSize {
+        let result = FlowResult(
+            in: proposal.replacingUnspecifiedDimensions().width,
+            subviews: subviews,
+            spacing: spacing
+        )
+        return result.size
+    }
+    
+    func placeSubviews(in bounds: CGRect, proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) {
+        let result = FlowResult(
+            in: bounds.width,
+            subviews: subviews,
+            spacing: spacing
+        )
+        for (index, subview) in subviews.enumerated() {
+            subview.place(at: result.positions[index], proposal: .unspecified)
+        }
+    }
+    
+    struct FlowResult {
+        var size: CGSize = .zero
+        var positions: [CGPoint] = []
+        
+        init(in maxWidth: CGFloat, subviews: Subviews, spacing: CGFloat) {
+            var x: CGFloat = 0
+            var y: CGFloat = 0
+            var lineHeight: CGFloat = 0
+            
+            for subview in subviews {
+                let size = subview.sizeThatFits(.unspecified)
+                
+                if x + size.width > maxWidth && x > 0 {
+                    x = 0
+                    y += lineHeight + spacing
+                    lineHeight = 0
+                }
+                
+                positions.append(CGPoint(x: x, y: y))
+                lineHeight = max(lineHeight, size.height)
+                x += size.width + spacing
+            }
+            
+            self.size = CGSize(width: maxWidth, height: y + lineHeight)
         }
     }
 }
