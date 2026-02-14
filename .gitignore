@@ -92,7 +92,7 @@ iOSInjectionProject/
 #
 # Uncomment this line if you want to ignore your Firebase configuration file
 # (NOT recommended for client apps as it's needed to run the app)
-# GoogleService-Info.plist
+ GoogleService-Info.plist
 
 # Environment variables (if you create Config.swift from Config.template.swift)
 Config.swift
